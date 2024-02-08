@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">ImagesGallery</string>
+    <string name="contentDescription_image_full_screen">Image Full Screen</string>
+    <string name="contentDescription_Image_Item">image item</string>
+    <string name="DeleteImageChoiceInMenu">Delete image</string>
+    <string name="TitleSearchAlbum">search_album</string>
+    <string name="DeleteAlbumsChoiceInMenu">Delete albums</string>
+    <string name="RemoveFavoriteAlbumsInMenu">Remove albums from favorite</string>
+    <string name="DeleteAlbumInMenu">Delete album</string>
+    <string name="ChangeCoverInMenu">Change cover</string>
+    <string name="AddImagesInMenu">Add images</string>
+    <string name="SeeDescriptionAlbumInMenu">See description</string>
+    <string name="AddFavoriteAlbumInMenu">Add to favorites</string>
+    <string name="RemoveFavoriteAlbumInMenu">Remove from favorites</string>
+    <string name="ChangeAlbumNameInMenu">Change name</string>
+    <string name="RemoveImagesFromAlbumInMenu">Remove from album</string>
+    <string name="DeleteImagesInMenu">Delete images</string>
+    <string name="SlideshowImagesInMenu">Slideshow</string>
+    <string name="ChangeDescriptionAlbumInMenu">Change description</string>
+    <string name="RemoveImageFromAlbumInMenu">Remove from album</string>
+    <string name="SetAsWallpaperInMenu">Set as wallpaper</string>
+    <string name="ShareImageInMenu">Share Image</string>
+    <string name="AddFavoriteImageInMenu">Add to favorites</string>
+    <string name="RemoveFavoriteImageInMenu">Remove from favorites</string>
+    <string name="SeeDescriptionImageInMenu">See description</string>
+    <string name="ContentDescriptionButtonAddImageToMenu">Add images to album</string>
+    <string name="ContentDescription_CoverAlbum">Cover of album</string>
+    <string name="placeholder">placeholder</string>
+    <string name="ContentDescription_BtnAddImagesToAlbum">Add images to album</string>
+    <string name="HintWriteDescription">Write description</string>
+    <string name="ContentDescription_BtnAddFavoriteImages">Add images to favorites</string>
+    <string name="DialogAddAlbumTitle">Add an album</string>
+    <string name="AddAlbumBtnInDialog">Add</string>
+    <string name="CancelBtnInDialog">Cancel</string>
+    <string name="HintEnterNameAlbum">Enter name of album</string>
+    <string name="DialogChangeAlbumNameTitle">Change name</string>
+    <string name="ChangeNameAlbumBtnInDialog">Change</string>
+    <string name="ContentDescription_AddNewAlbumBtn">Add new album</string>
+    <string name="ContentDescription_ImageItemInSlideShow">Image item when slideshow</string>
+    <string name="number_placeholder">0</string>
+    <string name="TotalImagesText">Total items: </string>
+    <string name="DeleteImagesChoiceInMenu">Delete images</string>
+    <string name="TakePhotoContentDescription">Take a photo</string>
+    <string name="TitleChooseImages">Choose images</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

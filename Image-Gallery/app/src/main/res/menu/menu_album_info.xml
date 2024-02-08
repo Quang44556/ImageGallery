@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/deleteAlbum"
+        android:title="@string/DeleteAlbumInMenu" />
+    <item android:id="@+id/addAnAlbumToFavorites"
+        android:title="@string/AddFavoriteAlbumInMenu" />
+    <item android:id="@+id/removeAnAlbumFromFavorites"
+        android:title="@string/RemoveFavoriteAlbumInMenu" />
+    <item android:id="@+id/changeAlbumName"
+        android:title="@string/ChangeAlbumNameInMenu" />
+</menu>
