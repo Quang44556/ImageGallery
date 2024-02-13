@@ -22,8 +22,6 @@ import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -50,9 +48,13 @@ import java.util.Objects;
 
 public class ImageInfoActivity extends AppCompatActivity {
     ImageView imageView;
+    ArrayList<Image> imageArrayList;
+    int currentIndex;
     Image image;
     private ActivityResultLauncher<Intent> startIntentSeeDescription;
     private ActivityResultLauncher<IntentSenderRequest> startIntentDeleteImage;
+    private final int SWIPE_THRESHOLD = 100;
+    private final int SWIPE_VELOCITY_THRESHOLD = 100;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -65,7 +67,11 @@ public class ImageInfoActivity extends AppCompatActivity {
         GestureDetector gestureDetector = new GestureDetector(ImageInfoActivity.this, new MyGesture());
 
         // Get the path to the image from the intent
-        image = (Image) getIntent().getSerializableExtra("image");
+        currentIndex = getIntent().getIntExtra("index", 0);
+        imageArrayList = (ArrayList<Image>) getIntent().getSerializableExtra("imageArraylist");
+        if (imageArrayList != null) {
+            image = imageArrayList.get(currentIndex);
+        }
 
         // Load the image into the ImageView element
         imageView = findViewById(R.id.imageFullScreen);
@@ -94,11 +100,40 @@ public class ImageInfoActivity extends AppCompatActivity {
         });
     }
 
-    static class MyGesture extends GestureDetector.SimpleOnGestureListener {
+    class MyGesture extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
-            Log.d("aaaa", "onFling");
-            return super.onFling(e1, e2, velocityX, velocityY);
+            if (e1 == null) {
+                return false;
+            }
+
+            float diffX = e2.getX() - e1.getX();
+            if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                if (diffX > 0) {
+                    // Right swipe
+                    currentIndex--;
+                    if (currentIndex < 0) {
+                        currentIndex = imageArrayList.size() - 1;
+                    }
+
+                } else {
+                    // Left swipe
+                    currentIndex++;
+                    if (currentIndex >= imageArrayList.size()) {
+                        currentIndex = 0;
+                    }
+
+                }
+
+                image = imageArrayList.get(currentIndex);
+                Glide.with(ImageInfoActivity.this)
+                        .load(image.getPath())
+                        .error(R.drawable.no_image)
+                        .into(imageView);
+                invalidateOptionsMenu();
+                return true;
+            }
+            return false;
         }
     }
 
@@ -136,6 +171,7 @@ public class ImageInfoActivity extends AppCompatActivity {
     private void finishActivityOnBackPress() {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("image", image);
+        resultIntent.putExtra("position", currentIndex);
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }
@@ -327,6 +363,7 @@ public class ImageInfoActivity extends AppCompatActivity {
     private void returnToPreviousActivityAfterDeletingImage() {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("ImageDeleted", image.getPath());
+        resultIntent.putExtra("position", currentIndex);
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

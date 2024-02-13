@@ -21,7 +21,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -39,7 +38,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.imagesgallery.Activity.AddFavoriteAlbumActivity;
@@ -55,14 +53,16 @@ import com.example.imagesgallery.R;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 
 public class AlbumFragment extends Fragment {
-    GridView gridView;
+
+    // Default: default album (not found through search)
+    // Search: albums are found through search
+    // Current: current album (default, search)
     ArrayList<Album> DefaultAlbumArrayList, SearchAlbumArrayList, CurrentAlbumArrayList;
+    int CurrentClickPosition = -1, DefaultAlbumClickPosition = -1;
+    GridView gridView;
     AlbumAdapter albumAdapter;
     ImageButton btnAddAlbum;
     Button btnAdd, btnCancel;
@@ -73,15 +73,7 @@ public class AlbumFragment extends Fragment {
     Context context;
     ConstraintLayout constraintLayoutAlbum;
     ContentValues rowValues;
-    // Default: default album (not found through search)
-    // Search: albums are found through search
-    // Current: current album (default, search)
-    int CurrentClickPosition = -1, DefaultAlbumClickPosition = -1;
     Toolbar toolbar;
-    boolean isLoading = false;
-    private final int[] DefaultCurrentMaxPosition = {0}, SearchCurrentMaxPosition = {0};
-    private final boolean[] isAllItemsDefaultLoaded = {false}, isAllItemsSearchLoaded = {false};
-    private final int[] IdMaxWhenStartingLoadDataDefault = {0}, IdMaxWhenStartingLoadDataSearch = {0};
     private final String DefaultSearchName = "";
     private String SearchName = DefaultSearchName;
     SearchView searchView;
@@ -168,6 +160,8 @@ public class AlbumFragment extends Fragment {
             btnAddAlbum.setVisibility(View.GONE);
         }
 
+        loadDataFromDatabase(SearchName, CurrentAlbumArrayList);
+
         // set toolbar
         activity = (AppCompatActivity) getActivity();
         if (activity != null) {
@@ -194,12 +188,6 @@ public class AlbumFragment extends Fragment {
             }
         });
 
-        // need to set them when load data to album tab the second time or more
-        DefaultCurrentMaxPosition[0] = 0;
-        isAllItemsDefaultLoaded[0] = false;
-        IdMaxWhenStartingLoadDataDefault[0] = 0;
-
-
         // when click button add of activity
         btnAddAlbum.setOnClickListener(view12 -> {
             if (context instanceof MainActivity) { // add new album
@@ -209,41 +197,6 @@ public class AlbumFragment extends Fragment {
                 startIntentAddAlbumToFavorites.launch(intent);
             } else if (context instanceof AddFavoriteAlbumActivity) { // add chosen albums to favorites
                 addAlbumsToFavorites();
-            }
-        });
-
-        // load on scroll
-        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView absListView, int i) {
-            }
-
-            @Override
-            public void onScroll(AbsListView absListView, int firstItem, int visibleItemCount, int totalItemCount) {
-                boolean isAllItemLoaded = isAllItemsDefaultLoaded[0];
-                if (CurrentAlbumArrayList == SearchAlbumArrayList)
-                    isAllItemLoaded = isAllItemsSearchLoaded[0];
-
-                if (!isLoading && absListView.getLastVisiblePosition() == totalItemCount - 1 && !isAllItemLoaded) {
-                    isLoading = true;
-                    // Create an executor that executes tasks in the main thread and background thread
-                    Executor mainExecutor = ContextCompat.getMainExecutor(context);
-                    ScheduledExecutorService backgroundExecutor = Executors.newSingleThreadScheduledExecutor();
-
-                    // Load data in the background thread.
-                    backgroundExecutor.execute(() -> {
-                        if (CurrentAlbumArrayList == DefaultAlbumArrayList) {
-                            loadDataFromDatabase(SearchName, CurrentAlbumArrayList, DefaultCurrentMaxPosition, isAllItemsDefaultLoaded, IdMaxWhenStartingLoadDataDefault);
-                        } else if (CurrentAlbumArrayList == SearchAlbumArrayList) {
-                            loadDataFromDatabase(SearchName, CurrentAlbumArrayList, SearchCurrentMaxPosition, isAllItemsSearchLoaded, IdMaxWhenStartingLoadDataSearch);
-                        }
-                        // Update gridview on the main thread
-                        mainExecutor.execute(() -> {
-                            albumAdapter.notifyDataSetChanged();
-                            isLoading = false;
-                        });
-                    });
-                }
             }
         });
     }
@@ -289,29 +242,16 @@ public class AlbumFragment extends Fragment {
     }
 
     // Load album from database and add to arraylist
-    private void loadDataFromDatabase(String SearchName, ArrayList<Album> albumArrayList, int[] currentMaxPosition, boolean[] isAllItemsLoaded, int[] IdMaxWhenStartingLoadData) {
+    private void loadDataFromDatabase(String SearchName, ArrayList<Album> albumArrayList) {
         String sql = "";
         Cursor cursor;
-        int itemsPerLoading = 10;
-        if (IdMaxWhenStartingLoadData[0] == 0) {
-            try {
-                sql = "SELECT MAX(id_album) FROM Album";
-                cursor = SqliteDatabase.db.rawQuery(sql, null);
-            } catch (Exception exception) {
-                return;
-            }
 
-            cursor.moveToPosition(-1);
-            while (cursor.moveToNext()) {
-                IdMaxWhenStartingLoadData[0] = cursor.getInt(0);
-            }
-        }
-        String[] argsAlbum = {String.valueOf(IdMaxWhenStartingLoadData[0]), "%" + SearchName + "%", String.valueOf(itemsPerLoading), String.valueOf(currentMaxPosition[0])};
+        String[] argsAlbum = {"%" + SearchName + "%"};
         try {
             if (context instanceof MainActivity || context instanceof AddFavoriteAlbumActivity) {
-                sql = "SELECT * FROM Album WHERE id_album <= ? AND name LIKE ? ORDER BY id_album DESC LIMIT ? OFFSET ?";
+                sql = "SELECT * FROM Album WHERE name LIKE ? ORDER BY id_album DESC";
             } else if (context instanceof FavoriteAlbumsActivity) {
-                sql = "SELECT * FROM Album WHERE isFavored = 1 AND id_album <= ? AND name LIKE ? ORDER BY id_album DESC LIMIT ? OFFSET ?";
+                sql = "SELECT * FROM Album WHERE isFavored = 1 AND name LIKE ? ORDER BY id_album DESC";
             }
             cursor = SqliteDatabase.db.rawQuery(sql, argsAlbum);
         } catch (Exception exception) {
@@ -319,9 +259,6 @@ public class AlbumFragment extends Fragment {
             return;
         }
 
-        if (!cursor.moveToFirst()) {
-            isAllItemsLoaded[0] = true;
-        }
         cursor.moveToPosition(-1);
         // load data and add album to arrayList
         while (cursor.moveToNext()) {
@@ -365,7 +302,6 @@ public class AlbumFragment extends Fragment {
         }
 
         cursor.close();
-        currentMaxPosition[0] += itemsPerLoading;
     }
 
     private void init() {
@@ -529,13 +465,10 @@ public class AlbumFragment extends Fragment {
 
                         // load data
                         SearchName = query;
-                        SearchCurrentMaxPosition[0] = 0;
-                        isAllItemsSearchLoaded[0] = false;
-                        IdMaxWhenStartingLoadDataSearch[0] = 0;
                         SearchAlbumArrayList.clear();
                         CurrentAlbumArrayList = SearchAlbumArrayList;
                         albumAdapter.setAlbumArrayList(CurrentAlbumArrayList);
-                        loadDataFromDatabase(SearchName, CurrentAlbumArrayList, SearchCurrentMaxPosition, isAllItemsSearchLoaded, IdMaxWhenStartingLoadDataSearch);
+                        loadDataFromDatabase(SearchName, CurrentAlbumArrayList);
                         searchView.clearFocus();
                         albumAdapter.notifyDataSetChanged();
                         return true;
@@ -726,7 +659,7 @@ public class AlbumFragment extends Fragment {
                                 albumAdapter.notifyDataSetChanged();
                             }
                             if (addedAlbums != null) {
-                                CurrentAlbumArrayList.addAll(addedAlbums);
+                                CurrentAlbumArrayList.addAll(0, addedAlbums);
                                 albumAdapter.notifyDataSetChanged();
                             }
                         }

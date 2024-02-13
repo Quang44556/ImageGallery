@@ -239,7 +239,8 @@ public class ImageFragment extends Fragment {
         } else {
             // Create an intent to start the new activity
             Intent intent = new Intent(context, ImageInfoActivity.class);
-            intent.putExtra("image", imageAdapter.getImageArrayList().get(index));
+            intent.putExtra("index", index);
+            intent.putExtra("imageArraylist", imageArrayList);
             startIntentSeeImageInfo.launch(intent);
         }
     }
@@ -376,21 +377,23 @@ public class ImageFragment extends Fragment {
                         if (data != null) {
                             Image image = (Image) data.getSerializableExtra("image");
                             String imgDeleted = data.getStringExtra("ImageDeleted");
+                            // position of image in ArrayList
+                            int position = data.getIntExtra("position",0);
                             if (imgDeleted != null) {
-                                imageArrayList.remove(clickPosition);
-                                imageAdapter.notifyItemRemoved(clickPosition);
+                                imageArrayList.remove(position);
+                                imageAdapter.notifyItemRemoved(position);
                                 // update UI
                                 totalImages.setText(String.valueOf(imageArrayList.size()));
                             } else {
                                 if (image != null) {
                                     if (context instanceof FavoriteImagesActivity && image.getIsFavored() == 0) {
-                                        imageArrayList.remove(clickPosition);
-                                        imageAdapter.notifyItemRemoved(clickPosition);
+                                        imageArrayList.remove(position);
+                                        imageAdapter.notifyItemRemoved(position);
                                         totalImages.setText(String.valueOf(imageArrayList.size()));
                                     } else {
-                                        imageArrayList.get(clickPosition).setIsFavored(image.getIsFavored());
-                                        imageArrayList.get(clickPosition).setDescription(image.getDescription());
-                                        imageAdapter.notifyItemChanged(clickPosition);
+                                        imageArrayList.get(position).setIsFavored(image.getIsFavored());
+                                        imageArrayList.get(position).setDescription(image.getDescription());
+                                        imageAdapter.notifyItemChanged(position);
                                     }
                                 }
                             }
