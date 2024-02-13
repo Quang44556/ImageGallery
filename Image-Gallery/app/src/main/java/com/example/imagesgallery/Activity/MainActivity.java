@@ -28,6 +28,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.imagesgallery.Fragment.AlbumFragment;
 import com.example.imagesgallery.Fragment.ImageFragment;
+import com.example.imagesgallery.Fragment.PersonalFragment;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -39,10 +40,12 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
     public static final String pathNoImage = "no_image";
-    AlbumFragment albumFragment = new AlbumFragment();
-    ImageFragment imageFragment = new ImageFragment();
+    AlbumFragment albumFragment;
+    ImageFragment imageFragment;
+    PersonalFragment personalFragment;
     Dialog dialogNavBottom;
     Button btnFavoriteAlbums;
+    Button btnFavoriteImages;
     private final int REQUEST_CODE = 10;
 
     // when user return back after go to setting to accept permission to access storage
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 totalPermissionGranted++;
             }
         }
-        if (totalPermissionGranted == permissions.length){
+        if (totalPermissionGranted == permissions.length) {
             doNextTaskIfAllPermissionGranted();
         }
     }
@@ -145,6 +148,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void doNextTaskIfAllPermissionGranted() {
+        personalFragment = new PersonalFragment();
+        imageFragment = new ImageFragment();
+        albumFragment = new AlbumFragment();
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         // create database
@@ -160,8 +167,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.image) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, imageFragment).commit();
                 return true;
-            } else if (item.getItemId() == R.id.itemBottomNav) {
-                showDialogNavBottom();
+            } else if (item.getItemId() == R.id.personal) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, personalFragment).commit();
+                return true;
             }
             return false;
         });
@@ -174,28 +182,6 @@ public class MainActivity extends AppCompatActivity {
     public void showBottomNavigationView() {
         bottomNavigationView.setVisibility(View.VISIBLE);
     }
-
-    private void showDialogNavBottom() {
-        dialogNavBottom = new Dialog(MainActivity.this);
-        dialogNavBottom.setContentView(R.layout.dialog_nav_bottom);
-
-        Objects.requireNonNull(dialogNavBottom.getWindow()).setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialogNavBottom.getWindow().setGravity(Gravity.BOTTOM);
-        btnFavoriteAlbums = dialogNavBottom.findViewById(R.id.buttonFavoriteAlbums);
-
-        btnFavoriteAlbums.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, FavoriteAlbumsActivity.class);
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
-            if (fragment instanceof AlbumFragment) {
-                AlbumFragment AlbumFragment = (AlbumFragment) fragment;
-                AlbumFragment.startIntentSeeFavoriteAlbums.launch(intent);
-            } else {
-                startActivity(intent);
-            }
-        });
-        dialogNavBottom.show();
-    }
-
 }
 
 

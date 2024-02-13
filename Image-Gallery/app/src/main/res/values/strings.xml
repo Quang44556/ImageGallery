@@ -42,6 +42,9 @@
     <string name="DeleteImagesChoiceInMenu">Delete images</string>
     <string name="TakePhotoContentDescription">Take a photo</string>
     <string name="TitleChooseImages">Choose images</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="TitleFavoriteImages">Favorite Images</string>
+    <string name="RemoveImagesFromFavoritesInMenu">Remove from favorites</string>
+    <string name="ImageTitleNav">Image</string>
+    <string name="AlbumTitleNav">Album</string>
+    <string name="PersonalTitleNav">Personal</string>
 </resources>

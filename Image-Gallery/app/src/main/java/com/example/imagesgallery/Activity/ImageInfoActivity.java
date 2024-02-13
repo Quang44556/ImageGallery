@@ -4,6 +4,7 @@ import static com.example.imagesgallery.Database.SqliteDatabase.delete;
 import static com.example.imagesgallery.Database.SqliteDatabase.update;
 import static com.example.imagesgallery.Utils.PathUtils.getUriFromPath;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.RecoverableSecurityException;
@@ -17,10 +18,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -29,6 +32,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -51,11 +55,14 @@ public class ImageInfoActivity extends AppCompatActivity {
     private ActivityResultLauncher<IntentSenderRequest> startIntentDeleteImage;
 
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_see_full_image);
 
         initActivityResultLauncher();
+
+        GestureDetector gestureDetector = new GestureDetector(ImageInfoActivity.this, new MyGesture());
 
         // Get the path to the image from the intent
         image = (Image) getIntent().getSerializableExtra("image");
@@ -66,6 +73,11 @@ public class ImageInfoActivity extends AppCompatActivity {
                 .load(image.getPath())
                 .error(R.drawable.no_image)
                 .into(imageView);
+
+        imageView.setOnTouchListener((view, motionEvent) -> {
+            gestureDetector.onTouchEvent(motionEvent);
+            return true;
+        });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -80,6 +92,14 @@ public class ImageInfoActivity extends AppCompatActivity {
                 finishActivityOnBackPress();
             }
         });
+    }
+
+    static class MyGesture extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
+            Log.d("aaaa", "onFling");
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
     }
 
     private void initActivityResultLauncher() {

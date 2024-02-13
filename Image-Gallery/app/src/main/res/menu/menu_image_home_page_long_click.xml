@@ -4,4 +4,6 @@
         android:title="@string/DeleteImagesChoiceInMenu" />
     <item android:id="@+id/slideshowImages"
         android:title="@string/SlideshowImagesInMenu" />
+    <item android:id="@+id/removeImagesFromFavorites"
+        android:title="@string/RemoveImagesFromFavoritesInMenu" />
 </menu>

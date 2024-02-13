@@ -54,7 +54,6 @@ import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -88,8 +87,6 @@ public class AlbumFragment extends Fragment {
     SearchView searchView;
     AppCompatActivity activity;
     private ActivityResultLauncher<Intent> startIntentAlbumInfo, startIntentAddAlbumToFavorites;
-    public ActivityResultLauncher<Intent> startIntentSeeFavoriteAlbums;
-
     ClickListener clickListener = new ClickListener() {
         @Override
         public void click(int index) {
@@ -734,18 +731,6 @@ public class AlbumFragment extends Fragment {
                             }
                         }
                     }
-                }
-        );
-
-        // when click button back in toolbar or in smartphone to finish FavoriteAlbum
-        startIntentSeeFavoriteAlbums = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    CurrentAlbumArrayList.clear();
-                    DefaultCurrentMaxPosition[0] = 0;
-                    isAllItemsDefaultLoaded[0] = false;
-                    IdMaxWhenStartingLoadDataDefault[0] = 0;
-                    albumAdapter.notifyDataSetChanged();
                 }
         );
     }

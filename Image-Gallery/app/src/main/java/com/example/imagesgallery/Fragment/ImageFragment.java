@@ -49,10 +49,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.imagesgallery.Activity.AlbumInfoActivity;
 import com.example.imagesgallery.Activity.ChooseImagesActivity;
+import com.example.imagesgallery.Activity.FavoriteImagesActivity;
 import com.example.imagesgallery.Activity.ImageInfoActivity;
 import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.Activity.SlideshowActivity;
 import com.example.imagesgallery.Adapter.ImageAdapter;
+import com.example.imagesgallery.Constants;
 import com.example.imagesgallery.Database.SqliteDatabase;
 import com.example.imagesgallery.Interface.ClickListener;
 import com.example.imagesgallery.Model.Album;
@@ -135,15 +137,9 @@ public class ImageFragment extends Fragment {
             // set toolbar
             if (activity != null) {
                 activity.setSupportActionBar(toolbar);
-
-                if (context instanceof MainActivity || context instanceof AlbumInfoActivity) {
-                    Objects.requireNonNull(activity.getSupportActionBar()).setTitle("");
-                } else if (context instanceof ChooseImagesActivity) {
-                    Objects.requireNonNull(activity.getSupportActionBar()).setTitle(R.string.TitleChooseImages);
-                }
             }
 
-            toolbar.setNavigationOnClickListener(view1 -> finishActivityOnBackPress());
+            toolbar.setNavigationOnClickListener(view1 -> clickBackPress());
         }
 
         if (context instanceof ChooseImagesActivity || context instanceof MainActivity) {
@@ -151,7 +147,7 @@ public class ImageFragment extends Fragment {
             activity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
-                    finishActivityOnBackPress();
+                    clickBackPress();
                 }
             });
         }
@@ -163,13 +159,21 @@ public class ImageFragment extends Fragment {
             toolbar.setVisibility(View.VISIBLE);
             totalImages.setVisibility(View.GONE);
             Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+            Objects.requireNonNull(activity.getSupportActionBar()).setTitle(R.string.TitleChooseImages);
             imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
         }
         if (context instanceof MainActivity) {
             toolbar.setVisibility(View.GONE);
+            Objects.requireNonNull(activity.getSupportActionBar()).setTitle("");
         } else if (context instanceof AlbumInfoActivity) {
             imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
             toolbar.setVisibility(View.GONE);
+            Objects.requireNonNull(activity.getSupportActionBar()).setTitle("");
+        } else if (context instanceof FavoriteImagesActivity) {
+            imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
+            toolbar.setVisibility(View.VISIBLE);
+            Objects.requireNonNull(activity.getSupportActionBar()).setTitle(R.string.TitleFavoriteImages);
+            Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         }
 
         // init
@@ -179,11 +183,15 @@ public class ImageFragment extends Fragment {
         recycler.setLayoutManager(manager);
         recycler.setAdapter(imageAdapter);
 
+        imageAdapter.setAction(Constants.NO_ACTION);
+
         if (context instanceof MainActivity || context instanceof ChooseImagesActivity) {
             // load images to array and insert to database
             loadImagesFromDevice();
         } else if (context instanceof AlbumInfoActivity) {
-            loadImagesFromDatabase();
+            loadImagesInAlbum();
+        } else if (context instanceof FavoriteImagesActivity) {
+            loadFavoriteImages();
         }
 
         imageAdapter.notifyDataSetChanged();
@@ -192,9 +200,15 @@ public class ImageFragment extends Fragment {
             if (context instanceof MainActivity) {
                 openCamera();
             } else if (context instanceof ChooseImagesActivity) {
-                addImagesToAlbum();
+                if (action == Constants.ACTION_ADD_IMAGES) {
+                    addImagesToAlbum();
+                } else if (action == Constants.ACTION_CHOOSE_FAVORITE_IMAGES) {
+                    addImagesToFavorites();
+                }
             } else if (context instanceof AlbumInfoActivity) {
                 chooseImagesToAddToAlbum();
+            } else if (context instanceof FavoriteImagesActivity) {
+                chooseImagesToAddToFavorites();
             }
         });
     }
@@ -203,8 +217,8 @@ public class ImageFragment extends Fragment {
         @Override
         public void click(int index) {
             clickPosition = index;
-            if (context instanceof MainActivity || context instanceof AlbumInfoActivity) {
-                clickImageToSeeFullScreen(index);
+            if (context instanceof MainActivity || context instanceof AlbumInfoActivity || context instanceof FavoriteImagesActivity) {
+                clickImage(index);
             } else if (context instanceof ChooseImagesActivity) {
                 clickImageInChooseImagesActivity(index);
             }
@@ -212,13 +226,13 @@ public class ImageFragment extends Fragment {
 
         @Override
         public void longClick(int index) {
-            if (action != AlbumInfoActivity.ACTION_CHANGE_COVER) {
+            if (action != Constants.ACTION_CHANGE_COVER) {
                 enterMultiselectMode(index);
             }
         }
     };
 
-    private void clickImageToSeeFullScreen(int index) {
+    private void clickImage(int index) {
         if (imageAdapter.isInMultiSelectMode()) {
             imageAdapter.toggleSelection(index);
             imageAdapter.notifyItemChanged(index);
@@ -237,7 +251,7 @@ public class ImageFragment extends Fragment {
         }
 
         if (!imageAdapter.isInMultiSelectMode()) {
-            if (action == AlbumInfoActivity.ACTION_ADD_IMAGES) {
+            if (action == Constants.ACTION_ADD_IMAGES) {
                 // change database
                 long rowID = addImageToAlbum(album, imageArrayList.get(index).getPath());
 
@@ -252,7 +266,7 @@ public class ImageFragment extends Fragment {
                     Toast.makeText(context, "Unable to add images", Toast.LENGTH_SHORT).show();
                 }
 
-            } else if (action == AlbumInfoActivity.ACTION_CHANGE_COVER) {
+            } else if (action == Constants.ACTION_CHANGE_COVER) {
                 // change database
                 Album temp = new Album(
                         imageArrayList.get(index),
@@ -271,6 +285,21 @@ public class ImageFragment extends Fragment {
                     activity.finish();
                 } else { // if change cover failed
                     Toast.makeText(context, "Cannot change cover", Toast.LENGTH_SHORT).show();
+                }
+            } else if (action == Constants.ACTION_CHOOSE_FAVORITE_IMAGES) {
+                // change database
+                Image image = imageArrayList.get(index);
+                Image temp = new Image(image.getPath(), image.getDescription(), 1);
+                long rowID = update(temp);
+                if (rowID > 0) {
+                    image.setIsFavored(1);
+                    // finish activity
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("image", image);
+                    activity.setResult(Activity.RESULT_OK, resultIntent);
+                    activity.finish();
+                } else {
+                    Toast.makeText(context, "Cannot add to favorites", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -294,14 +323,40 @@ public class ImageFragment extends Fragment {
         activity.finish();
     }
 
+    private void addImagesToFavorites() {
+        ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
+        ArrayList<Image> imagesAddedSuccessfullyArrayList = new ArrayList<>();
+        for (Image image : selectedImages) {
+            Image temp = new Image(image.getPath(), image.getDescription(), 1);
+            long rowID = update(temp);
+            if (rowID > 0) {
+                image.setIsFavored(1);
+                imagesAddedSuccessfullyArrayList.add(image);
+            } else {
+                Log.e("aaaa", "Unable to add image " + image.getPath() + "to album");
+            }
+        }
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("selectedImages", imagesAddedSuccessfullyArrayList);
+        activity.setResult(Activity.RESULT_OK, resultIntent);
+        activity.finish();
+    }
+
     private void chooseImagesToAddToAlbum() {
         Intent intent = new Intent(context, ChooseImagesActivity.class);
         intent.putExtra("album", album);
-        intent.putExtra("action", AlbumInfoActivity.ACTION_ADD_IMAGES);
+        intent.putExtra("action", Constants.ACTION_ADD_IMAGES);
         startIntentAddImages.launch(intent);
     }
 
-    private void finishActivityOnBackPress() {
+    private void chooseImagesToAddToFavorites() {
+        Intent intent = new Intent(context, ChooseImagesActivity.class);
+        intent.putExtra("action", Constants.ACTION_CHOOSE_FAVORITE_IMAGES);
+        startIntentAddImages.launch(intent);
+    }
+
+    private void clickBackPress() {
         if (imageAdapter.isInMultiSelectMode()) {
             exitMultiselectMode();
         } else {
@@ -328,9 +383,15 @@ public class ImageFragment extends Fragment {
                                 totalImages.setText(String.valueOf(imageArrayList.size()));
                             } else {
                                 if (image != null) {
-                                    imageArrayList.get(clickPosition).setIsFavored(image.getIsFavored());
-                                    imageArrayList.get(clickPosition).setDescription(image.getDescription());
-                                    imageAdapter.notifyItemChanged(clickPosition);
+                                    if (context instanceof FavoriteImagesActivity && image.getIsFavored() == 0) {
+                                        imageArrayList.remove(clickPosition);
+                                        imageAdapter.notifyItemRemoved(clickPosition);
+                                        totalImages.setText(String.valueOf(imageArrayList.size()));
+                                    } else {
+                                        imageArrayList.get(clickPosition).setIsFavored(image.getIsFavored());
+                                        imageArrayList.get(clickPosition).setDescription(image.getDescription());
+                                        imageAdapter.notifyItemChanged(clickPosition);
+                                    }
                                 }
                             }
 
@@ -412,8 +473,7 @@ public class ImageFragment extends Fragment {
                 });
     }
 
-    private void loadImagesFromDatabase() {
-        Log.d("aaaa", "db");
+    private void loadImagesInAlbum() {
         String sql = "SELECT * FROM Album_Contain_Images AS Contain, Image AS I " +
                 "WHERE id_album = ? AND Contain.path = I.path";
         String[] args = {String.valueOf(album.getId())};
@@ -443,6 +503,10 @@ public class ImageFragment extends Fragment {
     }
 
     public void loadImagesFromDevice() {
+        if (action == Constants.ACTION_CHOOSE_FAVORITE_IMAGES) {
+            imageAdapter.setAction(action);
+        }
+
         boolean SDCard = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
         if (SDCard) {
             final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
@@ -505,7 +569,7 @@ public class ImageFragment extends Fragment {
 
                 // if user is choosing image to add to album
                 // then check whether each image has already been current album or not
-                if (action == AlbumInfoActivity.ACTION_ADD_IMAGES) {
+                if (action == Constants.ACTION_ADD_IMAGES) {
                     for (int i = 0; i < imageArrayList.size(); i++) {
                         for (int j = 0; j < album.getListImage().size(); j++) {
                             if (imageArrayList.get(i).getPath().equals(album.getListImage().get(j).getPath())) {
@@ -517,6 +581,27 @@ public class ImageFragment extends Fragment {
             });
             insertThread.start();
         }
+    }
+
+    private void loadFavoriteImages() {
+        String sql = "SELECT * FROM Image WHERE isFavored = 1";
+        Cursor cursor = SqliteDatabase.db.rawQuery(sql, null);
+        cursor.moveToPosition(-1);
+
+        int pathImageColumn = cursor.getColumnIndex("path");
+        int descriptionImageColumn = cursor.getColumnIndex("description");
+        int isFavoredImageColumn = cursor.getColumnIndex("isFavored");
+
+        while (cursor.moveToNext()) {
+            String descriptionImageInAlbum = cursor.getString(descriptionImageColumn);
+            int isFavoredImageInAlbum = cursor.getInt(isFavoredImageColumn);
+            String pathImageInAlbum = cursor.getString(pathImageColumn);
+            Image image = new Image(pathImageInAlbum, descriptionImageInAlbum, isFavoredImageInAlbum);
+            imageArrayList.add(image);
+        }
+        cursor.close();
+
+        totalImages.setText(String.valueOf(imageArrayList.size()));
     }
 
     private void init() {
@@ -578,13 +663,15 @@ public class ImageFragment extends Fragment {
             if (context instanceof MainActivity) {
                 mainActivity.hideBottomNavigationView();
                 imageBtnAddImages.setVisibility(View.GONE);
+                toolbar.setVisibility(View.VISIBLE);
             } else if (context instanceof ChooseImagesActivity) {
                 imageBtnAddImages.setVisibility(View.VISIBLE);
+            } else if (context instanceof FavoriteImagesActivity) {
+                imageBtnAddImages.setVisibility(View.GONE);
+            } else if (context instanceof AlbumInfoActivity) {
+                imageBtnAddImages.setVisibility(View.GONE);
             }
 
-            if (!(context instanceof AlbumInfoActivity)) {
-                toolbar.setVisibility(View.VISIBLE);
-            }
             Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
             Objects.requireNonNull(activity.getSupportActionBar()).setHomeAsUpIndicator(R.drawable.close_icon);
 
@@ -598,6 +685,10 @@ public class ImageFragment extends Fragment {
                 imageBtnAddImages.setVisibility(View.GONE);
                 Objects.requireNonNull(
                         activity.getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            } else if (context instanceof FavoriteImagesActivity) {
+                imageBtnAddImages.setVisibility(View.VISIBLE);
+                Objects.requireNonNull(
+                        activity.getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
             }
 
             activity.invalidateOptionsMenu();
@@ -606,14 +697,13 @@ public class ImageFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        if (!(context instanceof AlbumInfoActivity)) {
+        if (context instanceof MainActivity || context instanceof FavoriteImagesActivity) {
             if (imageAdapter.isInMultiSelectMode()) {
                 requireActivity().getMenuInflater().inflate(R.menu.menu_image_home_page_long_click, menu);
 
                 // hide menu if current activity is ChooseImagesActivity
-                if (context instanceof ChooseImagesActivity) {
-                    menu.findItem(R.id.deleteImages).setVisible(false);
-                    menu.findItem(R.id.slideshowImages).setVisible(false);
+                if (!(context instanceof FavoriteImagesActivity)) {
+                    menu.findItem(R.id.removeImagesFromFavorites).setVisible(false);
                 }
             }
         }
@@ -628,11 +718,19 @@ public class ImageFragment extends Fragment {
             createDialogDeleteImages();
         } else if (itemID == R.id.slideshowImages) {
             slideshowImages();
+        } else if (itemID == R.id.removeImagesFromFavorites) {
+            removeImagesFromFavorites();
         }
         return super.onOptionsItemSelected(item);
     }
 
     public void createDialogDeleteImages() {
+        ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
+        if (selectedImages.size() == 0) {
+            Toast.makeText(context, "You have not chosen any images", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         androidx.appcompat.app.AlertDialog.Builder builder =
                 new androidx.appcompat.app.AlertDialog.Builder(requireContext());
         builder.setMessage("Are you sure you want to delete these images ?");
@@ -640,7 +738,6 @@ public class ImageFragment extends Fragment {
         // click yes
         builder.setPositiveButton("Yes", (dialog, id) -> {
             ArrayList<Integer> selectedPositions = imageAdapter.getSelectedPositions();
-            ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
 
             imagesWantToDelete = new ArrayList<>();
             for (int i = 0; i < selectedImages.size(); i++) {
@@ -720,14 +817,37 @@ public class ImageFragment extends Fragment {
 
     public void slideshowImages() {
         ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
-        if (!selectedImages.isEmpty()) {
-            startSlideshowActivity(selectedImages);
+        if (selectedImages.size() == 0) {
+            Toast.makeText(context, "You have not chosen any images", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        startSlideshowActivity(selectedImages);
     }
 
     public void startSlideshowActivity(ArrayList<Image> selectedImages) {
         Intent intent = new Intent(context, SlideshowActivity.class);
         intent.putExtra("selectedImages", selectedImages);
         startActivity(intent);
+    }
+
+    private void removeImagesFromFavorites() {
+        ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
+        if (selectedImages.size() == 0) {
+            Toast.makeText(context, "You have not chosen any images", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        for (Image image : selectedImages) {
+            Image temp = new Image(image.getPath(), image.getDescription(), 0);
+            long rowID = update(temp);
+            if (rowID > 0) {
+                imageArrayList.remove(image);
+            }
+        }
+
+        imageAdapter.notifyDataSetChanged();
+        exitMultiselectMode();
+        totalImages.setText(String.valueOf(imageArrayList.size()));
     }
 }

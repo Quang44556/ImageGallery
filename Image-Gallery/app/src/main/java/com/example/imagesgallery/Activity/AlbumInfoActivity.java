@@ -1,5 +1,6 @@
 package com.example.imagesgallery.Activity;
 
+import static com.example.imagesgallery.Constants.ACTION_CHANGE_COVER;
 import static com.example.imagesgallery.Database.SqliteDatabase.delete;
 import static com.example.imagesgallery.Database.SqliteDatabase.update;
 
@@ -47,14 +48,6 @@ public class AlbumInfoActivity extends AppCompatActivity {
     ImageView imgCoverAlbum;
     Toolbar toolbar;
     Album album;
-    //RecyclerView recyclerView;
-    //ImageButton btnAddImages;
-    //ImageAdapter adapter;
-    //ArrayList<Image> images;
-    //ArrayList<Image> deletedImagesArrayList;
-    //boolean isLoading = false, isAllItemsLoaded = false;
-    //private int CurrentMaxPosition = 0, IdMaxWhenStartingLoadData = 0;
-    public static final int ACTION_CHANGE_COVER = 1, ACTION_ADD_IMAGES = 2;
     Button btnChange, btnCancel;
     EditText edtChangeNameAlbum;
     TextView txtTitleDialog;
@@ -75,13 +68,8 @@ public class AlbumInfoActivity extends AppCompatActivity {
         imageFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.container, imageFragment).commit();
 
-        //deletedImagesArrayList = new ArrayList<>();
         init();
         initActivityResultLauncher();
-
-//        isAllItemsLoaded = false;
-//        CurrentMaxPosition = 0;
-//        IdMaxWhenStartingLoadData = 0;
 
         // add ellipsize at the end of textview if it is long
         txtAlbumDescription.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -113,22 +101,6 @@ public class AlbumInfoActivity extends AppCompatActivity {
                     .into(imgCoverAlbum);
         }
 
-        // init to prepare load images to album
-//        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-//        float screenWidthInDp = displayMetrics.widthPixels / displayMetrics.density;
-//        int imageWidth = 110; // size of an image
-//        int desiredColumnCount = (int) screenWidthInDp / imageWidth; // the number of images in a row
-//
-//        images = new ArrayList<>();
-//        album.setListImage(images);
-//        adapter = new ImageAdapter(AlbumInfoActivity.this, images, clickListener);
-//        GridLayoutManager manager = new GridLayoutManager(AlbumInfoActivity.this, desiredColumnCount);
-//        recyclerView.setLayoutManager(manager);
-//        recyclerView.setAdapter(adapter);
-
-        // load first images in album
-        //loadDataFromDatabase();
-
         // using toolbar as ActionBar
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -152,37 +124,6 @@ public class AlbumInfoActivity extends AppCompatActivity {
 
         // when click the cover of album
         imgCoverAlbum.setOnClickListener(view -> moveToChangeCoverScreen());
-
-        // click button add to insert image
-        //btnAddImages.setOnClickListener(view -> chooseImages());
-
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//            }
-//
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                GridLayoutManager gridLayoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-//                if (!isLoading && gridLayoutManager != null && gridLayoutManager.findLastCompletelyVisibleItemPosition() >= images.size() - 1 && !isAllItemsLoaded) {
-//                    isLoading = true;
-//                    // Create an executor that executes tasks in the main thread and background thread
-//                    Executor mainExecutor = ContextCompat.getMainExecutor(AlbumInfoActivity.this);
-//                    ScheduledExecutorService backgroundExecutor = Executors.newSingleThreadScheduledExecutor();
-//                    // Load data in the background thread.
-//                    backgroundExecutor.execute(() -> {
-//                        loadDataFromDatabase();
-//                        // Update list images in a album on the main thread
-//                        mainExecutor.execute(() -> {
-//                            adapter.notifyDataSetChanged();
-//                            isLoading = false;
-//                        });
-//                    });
-//                }
-//            }
-//        });
     }
 
     private void finishActivityOnBackPress() {
@@ -200,58 +141,6 @@ public class AlbumInfoActivity extends AppCompatActivity {
         intent.putExtra("album", album);
         startIntentChangeDescription.launch(intent);
     }
-
-//    private void loadDataFromDatabase() {
-//        String sql;
-//        Cursor cursor;
-//        if (IdMaxWhenStartingLoadData == 0) {
-//            try {
-//                sql = "SELECT MAX(id) FROM Album_Contain_Images";
-//                cursor = SqliteDatabase.db.rawQuery(sql, null);
-//            } catch (Exception exception) {
-//                return;
-//            }
-//
-//            cursor.moveToPosition(-1);
-//            while (cursor.moveToNext()) {
-//                IdMaxWhenStartingLoadData = cursor.getInt(0);
-//            }
-//            cursor.close();
-//        }
-//
-//        String sqlContainImages = "SELECT * FROM Album_Contain_Images AS Contain, Image AS I " +
-//                "WHERE id_album = ? AND Contain.path = I.path AND Contain.id <= ? ORDER BY id DESC LIMIT ? OFFSET ?";
-//        int itemsPerLoading = 21;
-//        String[] argsContainImages = {String.valueOf(album.getId()), String.valueOf(IdMaxWhenStartingLoadData), String.valueOf(itemsPerLoading), String.valueOf(CurrentMaxPosition)};
-//        Cursor cursorContainImages;
-//        try {
-//            cursorContainImages = SqliteDatabase.db.rawQuery(sqlContainImages, argsContainImages);
-//            if (!cursorContainImages.moveToFirst()) {
-//                isAllItemsLoaded = true;
-//            }
-//            cursorContainImages.moveToPosition(-1);
-//
-//            int pathImageColumn = cursorContainImages.getColumnIndex("Contain.path");
-//            int descriptionImageColumn = cursorContainImages.getColumnIndex("I.description");
-//            int isFavoredImageColumn = cursorContainImages.getColumnIndex("I.isFavored");
-//
-//            String pathImageInAlbum;
-//            String descriptionImageInAlbum;
-//            int isFavoredImageInAlbum;
-//
-//            while (cursorContainImages.moveToNext()) {
-//                descriptionImageInAlbum = cursorContainImages.getString(descriptionImageColumn);
-//                isFavoredImageInAlbum = cursorContainImages.getInt(isFavoredImageColumn);
-//                pathImageInAlbum = cursorContainImages.getString(pathImageColumn);
-//                Image image = new Image(pathImageInAlbum, descriptionImageInAlbum, isFavoredImageInAlbum);
-//                images.add(image);
-//            }
-//            cursorContainImages.close();
-//            CurrentMaxPosition += itemsPerLoading;
-//        } catch (Exception ignored) {
-//        }
-//    }
-
 
     private void init() {
         txtAlbumDescription = findViewById(R.id.txtAlbumDescription);
@@ -501,5 +390,93 @@ public class AlbumInfoActivity extends AppCompatActivity {
                 }
         );
     }
-
 }
+
+//        boolean isLoading = false, isAllItemsLoaded = false;
+//        int CurrentMaxPosition = 0, IdMaxWhenStartingLoadData = 0;
+
+//        isAllItemsLoaded = false;
+//        CurrentMaxPosition = 0;
+//        IdMaxWhenStartingLoadData = 0;
+
+//        load first images in album
+//        loadDataFromDatabase();
+
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//            }
+//
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//                GridLayoutManager gridLayoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+//                if (!isLoading && gridLayoutManager != null && gridLayoutManager.findLastCompletelyVisibleItemPosition() >= images.size() - 1 && !isAllItemsLoaded) {
+//                    isLoading = true;
+//                    // Create an executor that executes tasks in the main thread and background thread
+//                    Executor mainExecutor = ContextCompat.getMainExecutor(AlbumInfoActivity.this);
+//                    ScheduledExecutorService backgroundExecutor = Executors.newSingleThreadScheduledExecutor();
+//                    // Load data in the background thread.
+//                    backgroundExecutor.execute(() -> {
+//                        loadDataFromDatabase();
+//                        // Update list images in a album on the main thread
+//                        mainExecutor.execute(() -> {
+//                            adapter.notifyDataSetChanged();
+//                            isLoading = false;
+//                        });
+//                    });
+//                }
+//            }
+//        });
+
+//    private void loadDataFromDatabase() {
+//        String sql;
+//        Cursor cursor;
+//        if (IdMaxWhenStartingLoadData == 0) {
+//            try {
+//                sql = "SELECT MAX(id) FROM Album_Contain_Images";
+//                cursor = SqliteDatabase.db.rawQuery(sql, null);
+//            } catch (Exception exception) {
+//                return;
+//            }
+//
+//            cursor.moveToPosition(-1);
+//            while (cursor.moveToNext()) {
+//                IdMaxWhenStartingLoadData = cursor.getInt(0);
+//            }
+//            cursor.close();
+//        }
+//
+//        String sqlContainImages = "SELECT * FROM Album_Contain_Images AS Contain, Image AS I " +
+//                "WHERE id_album = ? AND Contain.path = I.path AND Contain.id <= ? ORDER BY id DESC LIMIT ? OFFSET ?";
+//        int itemsPerLoading = 21;
+//        String[] argsContainImages = {String.valueOf(album.getId()), String.valueOf(IdMaxWhenStartingLoadData), String.valueOf(itemsPerLoading), String.valueOf(CurrentMaxPosition)};
+//        Cursor cursorContainImages;
+//        try {
+//            cursorContainImages = SqliteDatabase.db.rawQuery(sqlContainImages, argsContainImages);
+//            if (!cursorContainImages.moveToFirst()) {
+//                isAllItemsLoaded = true;
+//            }
+//            cursorContainImages.moveToPosition(-1);
+//
+//            int pathImageColumn = cursorContainImages.getColumnIndex("Contain.path");
+//            int descriptionImageColumn = cursorContainImages.getColumnIndex("I.description");
+//            int isFavoredImageColumn = cursorContainImages.getColumnIndex("I.isFavored");
+//
+//            String pathImageInAlbum;
+//            String descriptionImageInAlbum;
+//            int isFavoredImageInAlbum;
+//
+//            while (cursorContainImages.moveToNext()) {
+//                descriptionImageInAlbum = cursorContainImages.getString(descriptionImageColumn);
+//                isFavoredImageInAlbum = cursorContainImages.getInt(isFavoredImageColumn);
+//                pathImageInAlbum = cursorContainImages.getString(pathImageColumn);
+//                Image image = new Image(pathImageInAlbum, descriptionImageInAlbum, isFavoredImageInAlbum);
+//                images.add(image);
+//            }
+//            cursorContainImages.close();
+//            CurrentMaxPosition += itemsPerLoading;
+//        } catch (Exception ignored) {
+//        }
+//    }

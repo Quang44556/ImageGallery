@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.imagesgallery.Activity.ChooseImagesActivity;
+import com.example.imagesgallery.Constants;
 import com.example.imagesgallery.Interface.ClickListener;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
@@ -25,6 +27,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private boolean isMultiSelectMode = false;
     private final ArrayList<Integer> selectedPositions;
     private final ArrayList<Image> selectedImages;
+    private int action;
+
+    public void setAction(int action) {
+        this.action = action;
+    }
 
     public ArrayList<Integer> getSelectedPositions() {
         return selectedPositions;
@@ -100,7 +107,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         boolean isSelected = selectedImages.contains(imageArrayList.get(holder.getAdapterPosition()));
         holder.itemView.setSelected(isSelected);
 
-        if (selectedPositions.contains(holder.getAdapterPosition())) {
+        if (selectedImages.contains(imageArrayList.get(holder.getAdapterPosition()))) {
             holder.checkBox.setVisibility(View.VISIBLE);
             holder.checkBox.setChecked(true);
         } else {
@@ -112,7 +119,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         holder.image.setEnabled(true);
         holder.image.setAlpha(1f);
 
-        if (!imageArrayList.get(holder.getAdapterPosition()).isCanAddToCurrentAlbum()) {
+        if (!imageArrayList.get(holder.getAdapterPosition()).isCanAddToCurrentAlbum() ||
+                (action == Constants.ACTION_CHOOSE_FAVORITE_IMAGES &&
+                        context instanceof ChooseImagesActivity &&
+                        imageArrayList.get(holder.getAdapterPosition()).getIsFavored() == 1)) {
             // disable image and change its appearance if it is in current album
             holder.image.setEnabled(false);
             holder.image.setAlpha(0.5f);
