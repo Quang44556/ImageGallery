@@ -56,7 +56,7 @@
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/no_image"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:scaleType="fitXY"
+                android:scaleType="centerCrop"
                 app:layout_constraintDimensionRatio="h,1:1"
                 app:layout_constraintLeft_toLeftOf="@id/ConstraintLayout_CoverDescription"
                 app:layout_constraintTop_toTopOf="@id/ConstraintLayout_CoverDescription"

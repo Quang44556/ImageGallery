@@ -101,6 +101,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                     .placeholder(R.drawable.loading)
                     .error(R.drawable.no_image)
                     .into(holder.image);
+        } else {
+            // user deleted image in another app
+            Glide.with(context)
+                    .load(R.drawable.no_image)
+                    .into(holder.image);
         }
 
         // Check if the item is selected and update its appearance

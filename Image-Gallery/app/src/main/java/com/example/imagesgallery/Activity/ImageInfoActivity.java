@@ -1,6 +1,7 @@
 package com.example.imagesgallery.Activity;
 
 import static com.example.imagesgallery.Database.SqliteDatabase.delete;
+import static com.example.imagesgallery.Database.SqliteDatabase.removeImageFromAlbum;
 import static com.example.imagesgallery.Database.SqliteDatabase.update;
 import static com.example.imagesgallery.Utils.PathUtils.getUriFromPath;
 
@@ -12,17 +13,14 @@ import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -30,14 +28,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.bumptech.glide.Glide;
-import com.example.imagesgallery.Database.SqliteDatabase;
+import com.example.imagesgallery.Adapter.ImageViewPager2Adapter;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
 
@@ -47,14 +43,12 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class ImageInfoActivity extends AppCompatActivity {
-    ImageView imageView;
     ArrayList<Image> imageArrayList;
     int currentIndex;
     Image image;
     private ActivityResultLauncher<Intent> startIntentSeeDescription;
     private ActivityResultLauncher<IntentSenderRequest> startIntentDeleteImage;
-    private final int SWIPE_THRESHOLD = 100;
-    private final int SWIPE_VELOCITY_THRESHOLD = 100;
+    ViewPager2 viewPager2;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -64,8 +58,6 @@ public class ImageInfoActivity extends AppCompatActivity {
 
         initActivityResultLauncher();
 
-        GestureDetector gestureDetector = new GestureDetector(ImageInfoActivity.this, new MyGesture());
-
         // Get the path to the image from the intent
         currentIndex = getIntent().getIntExtra("index", 0);
         imageArrayList = (ArrayList<Image>) getIntent().getSerializableExtra("imageArraylist");
@@ -73,16 +65,19 @@ public class ImageInfoActivity extends AppCompatActivity {
             image = imageArrayList.get(currentIndex);
         }
 
-        // Load the image into the ImageView element
-        imageView = findViewById(R.id.imageFullScreen);
-        Glide.with(this)
-                .load(image.getPath())
-                .error(R.drawable.no_image)
-                .into(imageView);
+        // init viewpager2
+        viewPager2 = findViewById(R.id.viewpager);
+        ImageViewPager2Adapter adapter = new ImageViewPager2Adapter(imageArrayList, getApplicationContext());
+        viewPager2.setAdapter(adapter);
+        viewPager2.setCurrentItem(currentIndex, false);
 
-        imageView.setOnTouchListener((view, motionEvent) -> {
-            gestureDetector.onTouchEvent(motionEvent);
-            return true;
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                currentIndex = position;
+                image = imageArrayList.get(currentIndex);
+                invalidateOptionsMenu();
+            }
         });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -98,43 +93,6 @@ public class ImageInfoActivity extends AppCompatActivity {
                 finishActivityOnBackPress();
             }
         });
-    }
-
-    class MyGesture extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
-            if (e1 == null) {
-                return false;
-            }
-
-            float diffX = e2.getX() - e1.getX();
-            if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                if (diffX > 0) {
-                    // Right swipe
-                    currentIndex--;
-                    if (currentIndex < 0) {
-                        currentIndex = imageArrayList.size() - 1;
-                    }
-
-                } else {
-                    // Left swipe
-                    currentIndex++;
-                    if (currentIndex >= imageArrayList.size()) {
-                        currentIndex = 0;
-                    }
-
-                }
-
-                image = imageArrayList.get(currentIndex);
-                Glide.with(ImageInfoActivity.this)
-                        .load(image.getPath())
-                        .error(R.drawable.no_image)
-                        .into(imageView);
-                invalidateOptionsMenu();
-                return true;
-            }
-            return false;
-        }
     }
 
     private void initActivityResultLauncher() {
@@ -161,6 +119,7 @@ public class ImageInfoActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK) {
                         // update to database
                         delete(image);
+                        imageArrayList.remove(currentIndex);
                         // return to previous activity
                         returnToPreviousActivityAfterDeletingImage();
                     }
@@ -170,8 +129,7 @@ public class ImageInfoActivity extends AppCompatActivity {
 
     private void finishActivityOnBackPress() {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("image", image);
-        resultIntent.putExtra("position", currentIndex);
+        resultIntent.putExtra("imageArrayList", imageArrayList);
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }
@@ -202,7 +160,7 @@ public class ImageInfoActivity extends AppCompatActivity {
         int itemID = item.getItemId();
 
         if (itemID == R.id.deleteImage) {
-            createDialogDeleteImage();
+            deleteImage(getUriFromPath(ImageInfoActivity.this, new File(image.getPath())));
         } else if (itemID == R.id.RemoveImage) {
             RemoveImageFromAlbum();
         } else if (itemID == R.id.setAsWallpaper) {
@@ -237,8 +195,7 @@ public class ImageInfoActivity extends AppCompatActivity {
     }
 
     private void shareImage() {
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-        Bitmap bitmap = bitmapDrawable.getBitmap();
+        Bitmap bitmap = BitmapFactory.decodeFile(image.getPath());
         shareImageAndText(bitmap);
     }
 
@@ -284,25 +241,13 @@ public class ImageInfoActivity extends AppCompatActivity {
         }
     }
 
-    public void createDialogDeleteImage() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to delete this image ?");
-
-        // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> deleteImage(getUriFromPath(ImageInfoActivity.this, new File(image.getPath()))));
-        // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
     private void deleteImage(Uri uri) {
         try {
             int row = getContentResolver().delete(uri, null, null);
             if (row > 0) {
                 // update to database
                 delete(image);
+                imageArrayList.remove(currentIndex);
                 // return to previous activity
                 returnToPreviousActivityAfterDeletingImage();
             } else {
@@ -326,6 +271,7 @@ public class ImageInfoActivity extends AppCompatActivity {
                         if (deleteImage.delete()) {
                             // update to database
                             delete(image);
+                            imageArrayList.remove(currentIndex);
                             // return to previous activity
                             returnToPreviousActivityAfterDeletingImage();
                         }
@@ -350,20 +296,23 @@ public class ImageInfoActivity extends AppCompatActivity {
     private void RemoveImageFromAlbum() {
         int id_album = getIntent().getIntExtra("id_album", -1);
 
-        String[] args = {String.valueOf(id_album), image.getPath()};
-        String sql = "DELETE FROM Album_Contain_Images WHERE id_album = ? AND path = ?";
-        SqliteDatabase.db.execSQL(sql, args);
+        long rowID = removeImageFromAlbum(image.getPath(), id_album);
 
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("ImageRemoved", image.getPath());
-        setResult(Activity.RESULT_OK, resultIntent);
-        finish();
+        if (rowID > 0) {
+            imageArrayList.remove(currentIndex);
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("imageArrayList", imageArrayList);
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish();
+        } else {
+            Toast.makeText(ImageInfoActivity.this, "Cannot remove image from album", Toast.LENGTH_SHORT).show();
+            Log.e("aaaa", "Unable to remove image " + image.getPath() + "from album ");
+        }
     }
 
     private void returnToPreviousActivityAfterDeletingImage() {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("ImageDeleted", image.getPath());
-        resultIntent.putExtra("position", currentIndex);
+        resultIntent.putExtra("imageArrayList", imageArrayList);
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

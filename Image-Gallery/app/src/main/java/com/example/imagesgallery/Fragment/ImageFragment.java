@@ -160,17 +160,17 @@ public class ImageFragment extends Fragment {
             totalImages.setVisibility(View.GONE);
             Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
             Objects.requireNonNull(activity.getSupportActionBar()).setTitle(R.string.TitleChooseImages);
-            imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
+            imageBtnAddImages.setImageResource(R.drawable.add_icon);
         }
         if (context instanceof MainActivity) {
             toolbar.setVisibility(View.GONE);
             Objects.requireNonNull(activity.getSupportActionBar()).setTitle("");
         } else if (context instanceof AlbumInfoActivity) {
-            imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
+            imageBtnAddImages.setImageResource(R.drawable.add_icon);
             toolbar.setVisibility(View.GONE);
             Objects.requireNonNull(activity.getSupportActionBar()).setTitle("");
         } else if (context instanceof FavoriteImagesActivity) {
-            imageBtnAddImages.setBackgroundResource(R.drawable.button_add);
+            imageBtnAddImages.setImageResource(R.drawable.add_icon);
             toolbar.setVisibility(View.VISIBLE);
             Objects.requireNonNull(activity.getSupportActionBar()).setTitle(R.string.TitleFavoriteImages);
             Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -241,7 +241,12 @@ public class ImageFragment extends Fragment {
             Intent intent = new Intent(context, ImageInfoActivity.class);
             intent.putExtra("index", index);
             intent.putExtra("imageArraylist", imageArrayList);
+            if (context instanceof AlbumInfoActivity) {
+                intent.putExtra("PreviousActivity", "AlbumInfoActivity");
+                intent.putExtra("id_album", album.getId());
+            }
             startIntentSeeImageInfo.launch(intent);
+
         }
     }
 
@@ -375,27 +380,22 @@ public class ImageFragment extends Fragment {
                     if (result.getResultCode() == RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null) {
-                            Image image = (Image) data.getSerializableExtra("image");
-                            String imgDeleted = data.getStringExtra("ImageDeleted");
-                            // position of image in ArrayList
-                            int position = data.getIntExtra("position",0);
-                            if (imgDeleted != null) {
-                                imageArrayList.remove(position);
-                                imageAdapter.notifyItemRemoved(position);
+                            ArrayList<Image> newImageArrayList = (ArrayList<Image>) data.getSerializableExtra("imageArrayList");
+
+                            if (newImageArrayList != null) {
+
+                                // remove images that users have just removed from favorites if current context is FavoriteImage
+                                if (context instanceof FavoriteImagesActivity) {
+                                    newImageArrayList.removeIf(image -> image.getIsFavored() == 0);
+                                }
+
+                                // update ArrayList
+                                imageArrayList.clear();
+                                imageArrayList.addAll(newImageArrayList);
+                                imageAdapter.notifyDataSetChanged();
+
                                 // update UI
                                 totalImages.setText(String.valueOf(imageArrayList.size()));
-                            } else {
-                                if (image != null) {
-                                    if (context instanceof FavoriteImagesActivity && image.getIsFavored() == 0) {
-                                        imageArrayList.remove(position);
-                                        imageAdapter.notifyItemRemoved(position);
-                                        totalImages.setText(String.valueOf(imageArrayList.size()));
-                                    } else {
-                                        imageArrayList.get(position).setIsFavored(image.getIsFavored());
-                                        imageArrayList.get(position).setDescription(image.getDescription());
-                                        imageAdapter.notifyItemChanged(position);
-                                    }
-                                }
                             }
 
                         }
@@ -692,6 +692,8 @@ public class ImageFragment extends Fragment {
                 imageBtnAddImages.setVisibility(View.VISIBLE);
                 Objects.requireNonNull(
                         activity.getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            } else if (context instanceof AlbumInfoActivity) {
+                imageBtnAddImages.setVisibility(View.VISIBLE);
             }
 
             activity.invalidateOptionsMenu();
@@ -718,7 +720,7 @@ public class ImageFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemID = item.getItemId();
         if (itemID == R.id.deleteImages) {
-            createDialogDeleteImages();
+            deleteChosenImages();
         } else if (itemID == R.id.slideshowImages) {
             slideshowImages();
         } else if (itemID == R.id.removeImagesFromFavorites) {
@@ -727,38 +729,26 @@ public class ImageFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    public void createDialogDeleteImages() {
+    public void deleteChosenImages() {
         ArrayList<Image> selectedImages = imageAdapter.getSelectedImages();
         if (selectedImages.size() == 0) {
             Toast.makeText(context, "You have not chosen any images", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        androidx.appcompat.app.AlertDialog.Builder builder =
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext());
-        builder.setMessage("Are you sure you want to delete these images ?");
+        ArrayList<Integer> selectedPositions = imageAdapter.getSelectedPositions();
 
-        // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> {
-            ArrayList<Integer> selectedPositions = imageAdapter.getSelectedPositions();
+        imagesWantToDelete = new ArrayList<>();
+        for (int i = 0; i < selectedImages.size(); i++) {
+            Image image = selectedImages.get(i);
+            int position = selectedPositions.get(i);
+            deleteImage(image, position);
+        }
+        // set text which shows total image
+        // text of totalImages only change when the code block in catch does not execute (in api 28)
+        totalImages.setText(String.valueOf(imageArrayList.size()));
 
-            imagesWantToDelete = new ArrayList<>();
-            for (int i = 0; i < selectedImages.size(); i++) {
-                Image image = selectedImages.get(i);
-                int position = selectedPositions.get(i);
-                deleteImage(image, position);
-            }
-            // set text which shows total image
-            // text of totalImages only change when the code block in catch does not execute (in api 28)
-            totalImages.setText(String.valueOf(imageArrayList.size()));
-
-            exitMultiselectMode();
-        });
-        // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
-
-        androidx.appcompat.app.AlertDialog dialog = builder.create();
-        dialog.show();
+        exitMultiselectMode();
     }
 
     // delete image that has index = {position} in array
@@ -799,6 +789,9 @@ public class ImageFragment extends Fragment {
                         if (deleteImage.delete()) {
                             // update to database
                             delete(image);
+
+                            imageArrayList.remove(image);
+                            imageAdapter.notifyItemRemoved(position);
                         }
                     } else {
                         Log.e("error", "Cannot delete image");

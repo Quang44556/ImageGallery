@@ -27,11 +27,12 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.github.chrisbanes.photoview.PhotoView
-        android:id="@+id/imageFullScreen"
+    <androidx.viewpager2.widget.ViewPager2
+        android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/contentDescription_image_full_screen" />
+        android:id="@+id/viewpager"
+        android:layout_weight="9">
+
+    </androidx.viewpager2.widget.ViewPager2>
 
 </LinearLayout>

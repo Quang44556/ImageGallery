@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Activity.MainActivity">
+    tools:context=".Activity.MainActivity"
+    android:id="@+id/LinearLayout">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -56,10 +57,6 @@
             android:id="@+id/gallery_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +70,9 @@
                 android:id="@+id/imageBtnCamera"
                 android:layout_width="0dp"
                 android:layout_height="00dp"
-                android:background="@drawable/camera_btn"
+                android:src="@drawable/camera_icon"
+                android:background="@drawable/rounded_button"
+                android:padding="10dp"
                 android:layout_gravity="bottom|end"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -82,7 +81,9 @@
                 app:layout_constraintWidth_percent="0.17"
                 app:layout_constraintDimensionRatio="1:1"
                 android:scaleType="fitXY"
-                android:contentDescription="@string/TakePhotoContentDescription"/>
+                android:contentDescription="@string/TakePhotoContentDescription"
+                app:layout_constraintHeight_max="85dp"
+                app:layout_constraintWidth_max="85dp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 

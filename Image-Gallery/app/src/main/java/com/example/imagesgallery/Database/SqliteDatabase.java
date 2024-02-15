@@ -80,8 +80,8 @@ public class SqliteDatabase {
         return db.insert("Album_Contain_Images", null, values);
     }
 
-    public static long removeImageFromAlbum(String imgPath, Album album) {
-        String[] args = {imgPath, String.valueOf(album.getId())};
+    public static long removeImageFromAlbum(String imgPath, int album_id) {
+        String[] args = {imgPath, String.valueOf(album_id)};
         return db.delete("Album_Contain_Images", "path = ? AND id_album = ?", args);
     }
 }

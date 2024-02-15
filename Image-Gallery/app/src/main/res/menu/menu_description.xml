@@ -4,7 +4,7 @@
 
     <item android:id="@+id/changeDescription"
         android:title="@string/ChangeDescriptionAlbumInMenu"
-        android:icon="@drawable/edit"
+        android:icon="@drawable/edit_icon"
         app:showAsAction="always"/>
 
 </menu>

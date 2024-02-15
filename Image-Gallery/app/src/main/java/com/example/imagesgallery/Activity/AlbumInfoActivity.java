@@ -11,7 +11,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,7 +33,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import com.example.imagesgallery.Database.SqliteDatabase;
 import com.example.imagesgallery.Fragment.ImageFragment;
-import com.example.imagesgallery.Interface.ClickListener;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
@@ -197,7 +195,7 @@ public class AlbumInfoActivity extends AppCompatActivity {
             updateAlbumIsFavored(0);
             invalidateOptionsMenu();
         } else if (itemID == R.id.deleteImagesFromAlbum) {
-            imageFragment.createDialogDeleteImages();
+            imageFragment.deleteChosenImages();
             Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
         } else if (itemID == R.id.slideshow) {
             imageFragment.slideshowImages();
@@ -305,7 +303,7 @@ public class AlbumInfoActivity extends AppCompatActivity {
     }
 
     private void removeImageFromAlbum(String imagePath) {
-        long rowID = SqliteDatabase.removeImageFromAlbum(imagePath, album);
+        long rowID = SqliteDatabase.removeImageFromAlbum(imagePath, album.getId());
         if (rowID > 0) {
             // change arrayList image in album
             ArrayList<Image> imageArrayList = imageFragment.imageAdapter.getImageArrayList();

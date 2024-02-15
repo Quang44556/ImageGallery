@@ -3,19 +3,13 @@ package com.example.imagesgallery.Activity;
 import static com.example.imagesgallery.Database.SqliteDatabase.createDatabase;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -24,18 +18,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import com.example.imagesgallery.Fragment.AlbumFragment;
 import com.example.imagesgallery.Fragment.ImageFragment;
 import com.example.imagesgallery.Fragment.PersonalFragment;
-import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
@@ -43,9 +34,6 @@ public class MainActivity extends AppCompatActivity {
     AlbumFragment albumFragment;
     ImageFragment imageFragment;
     PersonalFragment personalFragment;
-    Dialog dialogNavBottom;
-    Button btnFavoriteAlbums;
-    Button btnFavoriteImages;
     private final int REQUEST_CODE = 10;
 
     // when user return back after go to setting to accept permission to access storage

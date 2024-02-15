@@ -116,9 +116,9 @@ public class DescriptionActivity extends AppCompatActivity {
                 }
 
                 edtDescription.setFocusable(false);
-                item.setIcon(R.drawable.edit);
+                item.setIcon(R.drawable.edit_icon);
             } else { // click edit
-                item.setIcon(R.drawable.done);
+                item.setIcon(R.drawable.done_icon);
                 edtDescription.setFocusableInTouchMode(true);
             }
         }

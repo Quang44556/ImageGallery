@@ -4,7 +4,7 @@
     <item
         android:id="@+id/search_album"
         app:showAsAction="ifRoom|collapseActionView"
-        android:icon="@drawable/search"
+        android:icon="@drawable/search_icon"
         android:title="@string/TitleSearchAlbum"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 </menu>
