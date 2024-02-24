@@ -2,23 +2,59 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/RelativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.MainActivity"
-    android:id="@+id/RelativeLayout">
+    tools:context=".Activity.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/LinearLayoutTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="@string/app_name_display"
+            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:textSize="25sp"
+            android:fontFamily="@font/lobster_regular"/>
+
+        <TextView
+            android:id="@+id/txtSignIn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/SignInTitle"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            android:textColor="#1369D5"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgButtonUserProfile"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:src="@drawable/user_profile"
+            android:layout_gravity="end"
+            android:visibility="gone"/>
+
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottom_navigation"
-        android:layout_marginBottom="0dp" />
+        android:layout_above="@id/bottom_navigation"
+        android:layout_below="@id/LinearLayoutTitle"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/bottom_navigation"
         android:layout_alignParentBottom="true"
-        app:menu="@menu/bottom_nav_menu"/>
+        app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>

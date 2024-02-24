@@ -69,7 +69,7 @@
             <ImageButton
                 android:id="@+id/imageBtnCamera"
                 android:layout_width="0dp"
-                android:layout_height="00dp"
+                android:layout_height="0dp"
                 android:src="@drawable/camera_icon"
                 android:background="@drawable/rounded_button"
                 android:padding="10dp"

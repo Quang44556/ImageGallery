@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/deleteImage"
-        android:title="@string/DeleteImageChoiceInMenu"
-        android:icon="@android:drawable/bottom_bar" />
+    <item
+        android:id="@+id/deleteImage"
+        android:title="@string/DeleteImageChoiceInMenu" />
     <item
         android:id="@+id/RemoveImage"
-        android:title="@string/RemoveImageFromAlbumInMenu"/>
+        android:title="@string/RemoveImageFromAlbumInMenu" />
     <item
         android:id="@+id/setAsWallpaper"
-        android:title="@string/SetAsWallpaperInMenu"/>
+        android:title="@string/SetAsWallpaperInMenu" />
     <item
         android:id="@+id/shareImage"
-        android:title="@string/ShareImageInMenu"/>
-    <item android:id="@+id/addImageToFavorites"
-        android:title="@string/AddFavoriteImageInMenu"
-        android:icon="@android:drawable/bottom_bar" />
-    <item android:id="@+id/removeImageFromFavorites"
-        android:title="@string/RemoveFavoriteImageInMenu"
-        android:icon="@android:drawable/bottom_bar" />
-    <item android:id="@+id/seeDescription"
-        android:title="@string/SeeDescriptionImageInMenu"
-        android:icon="@android:drawable/bottom_bar" />
+        android:title="@string/ShareImageInMenu" />
+    <item
+        android:id="@+id/addImageToFavorites"
+        android:title="@string/AddFavoriteImageInMenu" />
+    <item
+        android:id="@+id/removeImageFromFavorites"
+        android:title="@string/RemoveFavoriteImageInMenu" />
+    <item
+        android:id="@+id/seeDescription"
+        android:title="@string/SeeDescriptionImageInMenu" />
+    <item
+        android:id="@+id/backupImage"
+        android:title="@string/BackupInMenu" />
+    <item
+        android:id="@+id/downloadBackupImage"
+        android:title="@string/DownloadInMenu" />
+    <item
+        android:id="@+id/deleteBackupImage"
+        android:title="@string/DeleteBackupTitle" />
 </menu>

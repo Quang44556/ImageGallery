@@ -37,13 +37,13 @@ public class DescriptionActivity extends AppCompatActivity {
         init();
 
         // set description (album)
-        album = (Album) getIntent().getSerializableExtra("album");
+        album = getIntent().getParcelableExtra("album");
         if (album != null) {
             edtDescription.setText(album.getDescription());
         }
 
         // set description (image)
-        image = (Image) getIntent().getSerializableExtra("image");
+        image = getIntent().getParcelableExtra("image");
         if (image != null) {
             edtDescription.setText(image.getDescription());
         }

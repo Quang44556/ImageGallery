@@ -3,10 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/deleteAlbums"
         android:title="@string/DeleteAlbumsChoiceInMenu"
-        android:icon="@android:drawable/ic_menu_delete"
-        app:showAsAction="ifRoom"/>
+        android:icon="@android:drawable/ic_menu_delete" />
+
     <item android:id="@+id/removeAlbumsFromFavorites"
         android:title="@string/RemoveFavoriteAlbumsInMenu"
-        android:icon="@drawable/remove_favorites"
-        app:showAsAction="always" />
+        android:icon="@drawable/remove_favorites" />
+
+    <item android:id="@+id/selectAllAlbums"
+        android:title="@string/SelectAllTitle"
+        android:icon="@drawable/remove_favorites" />
+
 </menu>

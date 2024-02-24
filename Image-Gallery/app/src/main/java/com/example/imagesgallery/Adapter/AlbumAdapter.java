@@ -89,6 +89,10 @@ public class AlbumAdapter extends BaseAdapter {
         notifyDataSetChanged(); // Update the UI to reflect the selection
     }
 
+    public ArrayList<Integer> getSelectedPositions() {
+        return selectedPositions;
+    }
+
     public void clearSelection() {
         selectedAlbums.clear();
         selectedPositions.clear();

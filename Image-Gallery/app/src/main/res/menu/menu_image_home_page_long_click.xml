@@ -6,4 +6,12 @@
         android:title="@string/SlideshowImagesInMenu" />
     <item android:id="@+id/removeImagesFromFavorites"
         android:title="@string/RemoveImagesFromFavoritesInMenu" />
+    <item android:id="@+id/backupImages"
+        android:title="@string/BackupInMenu" />
+    <item android:id="@+id/deleteBackupImages"
+        android:title="@string/DeleteBackupTitle" />
+    <item android:id="@+id/downloadBackupImages"
+        android:title="@string/DownloadInMenu" />
+    <item android:id="@+id/selectAllImages"
+        android:title="@string/SelectAllTitle" />
 </menu>

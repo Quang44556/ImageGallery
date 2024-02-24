@@ -1,29 +1,30 @@
 package com.example.imagesgallery.Adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
-import com.example.imagesgallery.Activity.AlbumInfoActivity;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import java.util.ArrayList;
 
 public class ImageViewPager2Adapter extends RecyclerView.Adapter<ImageViewPager2Adapter.ImageViewHolder> {
-    private ArrayList<Image> imageArrayList;
-    Context context;
+    private final ArrayList<Image> imageArrayList;
+    private final Context context;
+    private final ViewPager2 viewPager2;
 
-    public ImageViewPager2Adapter(ArrayList<Image> imageArrayList, Context context) {
+    public ImageViewPager2Adapter(ArrayList<Image> imageArrayList, Context context, ViewPager2 viewPager2) {
         this.imageArrayList = imageArrayList;
         this.context = context;
+        this.viewPager2 = viewPager2;
     }
 
     @NonNull
@@ -39,7 +40,13 @@ public class ImageViewPager2Adapter extends RecyclerView.Adapter<ImageViewPager2
         Glide.with(context)
                 .load(image.getPath())
                 .error(R.drawable.no_image)
-                .into(holder.imageView);
+                .into(holder.photoView);
+
+        // disable swiping to next image if user is zooming current image
+        holder.photoView.setOnMatrixChangeListener(rect -> {
+            float scale = holder.photoView.getScale();
+            viewPager2.setUserInputEnabled(scale == 1.0f);
+        });
     }
 
     @Override
@@ -48,13 +55,12 @@ public class ImageViewPager2Adapter extends RecyclerView.Adapter<ImageViewPager2
     }
 
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
-
-        private ImageView imageView;
+        private final PhotoView photoView;
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            imageView = itemView.findViewById(R.id.imageFullScreen);
+            photoView = itemView.findViewById(R.id.imageFullScreen);
         }
     }
 }
+

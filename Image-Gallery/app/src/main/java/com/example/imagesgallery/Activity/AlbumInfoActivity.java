@@ -1,8 +1,8 @@
 package com.example.imagesgallery.Activity;
 
-import static com.example.imagesgallery.Constants.ACTION_CHANGE_COVER;
 import static com.example.imagesgallery.Database.SqliteDatabase.delete;
 import static com.example.imagesgallery.Database.SqliteDatabase.update;
+import static com.example.imagesgallery.Utils.Constants.ACTION_CHANGE_COVER;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -36,6 +36,7 @@ import com.example.imagesgallery.Fragment.ImageFragment;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -58,11 +59,11 @@ public class AlbumInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_info);
 
-        album = (Album) getIntent().getSerializableExtra("album");
+        album = getIntent().getParcelableExtra("album");
 
         imageFragment = new ImageFragment();
         Bundle bundle = new Bundle();
-        bundle.putSerializable("album", album);
+        bundle.putParcelable("album", album);
         imageFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.container, imageFragment).commit();
 
@@ -105,9 +106,7 @@ public class AlbumInfoActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(album.getName());
 
         // set return button
-        toolbar.setNavigationOnClickListener(v -> {
-            finishActivityOnBackPress();
-        });
+        toolbar.setNavigationOnClickListener(v -> finishActivityOnBackPress());
 
         // set back press in device
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -168,7 +167,6 @@ public class AlbumInfoActivity extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.close_icon);
         } else {
             getMenuInflater().inflate(R.menu.menu_album_info, menu);
-            //Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
             int isFavored = album.getIsFavored();
             if (isFavored == 1) {
                 menu.findItem(R.id.removeAnAlbumFromFavorites).setVisible(true);
@@ -201,6 +199,11 @@ public class AlbumInfoActivity extends AppCompatActivity {
             imageFragment.slideshowImages();
         } else if (itemID == R.id.removeFromAlbum) {
             createDialogRemoveImages();
+        } else if (itemID == R.id.backupImagesInAlbum){
+            //imageFragment.backupImages();
+            Toast.makeText(this, "backup", Toast.LENGTH_SHORT).show();
+            Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            imageFragment.exitMultiselectMode();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -273,15 +276,15 @@ public class AlbumInfoActivity extends AppCompatActivity {
     }
 
     private void createDialogRemoveImages() {
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(AlbumInfoActivity.this);
         if (imageFragment.imageAdapter.getSelectedImages().size() == 0) {
             Toast.makeText(this, "You have not chosen any images", Toast.LENGTH_SHORT).show();
             return;
         }
-        builder.setMessage("Are you sure you want to remove these images from album ?");
+        dialogBuilder.setTitle("Are you sure you want to remove these images from album ?");
 
         // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> {
+        dialogBuilder.setPositiveButton("Yes", (dialog, id) -> {
             ArrayList<Image> selectedImages = imageFragment.imageAdapter.getSelectedImages();
 
             // remove images
@@ -296,10 +299,9 @@ public class AlbumInfoActivity extends AppCompatActivity {
         });
 
         // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
+        dialogBuilder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
 
-        androidx.appcompat.app.AlertDialog dialog = builder.create();
-        dialog.show();
+        dialogBuilder.show();
     }
 
     private void removeImageFromAlbum(String imagePath) {
@@ -326,16 +328,16 @@ public class AlbumInfoActivity extends AppCompatActivity {
     }
 
     public void createDialogDeleteAlbum() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to delete this album ?");
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(AlbumInfoActivity.this);
+        dialogBuilder.setTitle("Are you sure you want to delete this album ?");
 
         // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> deleteAlbum());
-        // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
+        dialogBuilder.setPositiveButton("Yes", (dialog, id) -> deleteAlbum());
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        // click no
+        dialogBuilder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
+
+        dialogBuilder.show();
     }
 
     private void deleteAlbum() {
@@ -358,7 +360,7 @@ public class AlbumInfoActivity extends AppCompatActivity {
                         Intent data = result.getData();
                         if (data != null) {
                             // get result from AddImageActivity and change cover
-                            Image image = (Image) data.getSerializableExtra("image");
+                            Image image = data.getParcelableExtra("image");
                             if (image != null) {
                                 album.setCover(image);
                                 Glide.with(AlbumInfoActivity.this)

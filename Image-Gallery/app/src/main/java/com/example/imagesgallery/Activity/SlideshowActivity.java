@@ -25,7 +25,7 @@ public class SlideshowActivity extends AppCompatActivity {
         setContentView(R.layout.activity_slideshow);
 
         // Get the selected image paths from the Intent
-        selectedImages = (ArrayList<Image>) getIntent().getSerializableExtra("selectedImages");
+        selectedImages = getIntent().getParcelableArrayListExtra("selectedImages");
 
         // Initialize ViewPager and set an adapter
         viewPager = findViewById(R.id.viewPager);

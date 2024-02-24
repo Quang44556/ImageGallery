@@ -33,7 +33,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -50,6 +49,7 @@ import com.example.imagesgallery.Interface.ClickListener;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -78,7 +78,7 @@ public class AlbumFragment extends Fragment {
     private String SearchName = DefaultSearchName;
     SearchView searchView;
     AppCompatActivity activity;
-    private ActivityResultLauncher<Intent> startIntentAlbumInfo, startIntentAddAlbumToFavorites;
+    private ActivityResultLauncher<Intent> startIntentAlbumInfo, startIntentAddAlbumsToFavorites;
     ClickListener clickListener = new ClickListener() {
         @Override
         public void click(int index) {
@@ -140,6 +140,10 @@ public class AlbumFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         init();
 
+        if (context instanceof MainActivity){
+            mainActivity.hideLinearLayoutTitle();
+        }
+
         // set minimum items per row of gridview = 2
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         float screenWidthInDp = displayMetrics.widthPixels / displayMetrics.density;
@@ -194,7 +198,7 @@ public class AlbumFragment extends Fragment {
                 showDialog();
             } else if (context instanceof FavoriteAlbumsActivity) { // add an exist album to favorites
                 Intent intent = new Intent(context, AddFavoriteAlbumActivity.class);
-                startIntentAddAlbumToFavorites.launch(intent);
+                startIntentAddAlbumsToFavorites.launch(intent);
             } else if (context instanceof AddFavoriteAlbumActivity) { // add chosen albums to favorites
                 addAlbumsToFavorites();
             }
@@ -519,6 +523,8 @@ public class AlbumFragment extends Fragment {
             createDialogDeleteAlbums();
         } else if (itemID == R.id.removeAlbumsFromFavorites) {
             createDialogRemoveAlbums();
+        } else if (itemID == R.id.selectAllAlbums) {
+            selectAllAlbums();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -529,16 +535,15 @@ public class AlbumFragment extends Fragment {
             return;
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Are you sure you want to remove these albums from favorites?");
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context);
+        dialogBuilder.setTitle("Are you sure you want to remove these albums from favorites?");
 
         // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> removeAlbumsFromFavorites());
+        dialogBuilder.setPositiveButton("Yes", (dialog, id) -> removeAlbumsFromFavorites());
         // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
+        dialogBuilder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        dialogBuilder.show();
     }
 
     private void removeAlbumsFromFavorites() {
@@ -572,16 +577,16 @@ public class AlbumFragment extends Fragment {
             return;
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Are you sure you want to deletes these albums ?");
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context);
+
+        dialogBuilder.setTitle("Are you sure you want to deletes these albums ?");
 
         // click yes
-        builder.setPositiveButton("Yes", (dialog, id) -> deleteAlbums());
+        dialogBuilder.setPositiveButton("Yes", (dialog, id) -> deleteAlbums());
         // click no
-        builder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
+        dialogBuilder.setNegativeButton("No", (dialog, id) -> dialog.dismiss());
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        dialogBuilder.show();
     }
 
     private void deleteAlbums() {
@@ -597,6 +602,31 @@ public class AlbumFragment extends Fragment {
         exitMultiselectMode();
     }
 
+    private void selectAllAlbums() {
+        ArrayList<Album> selectedAlbums = albumAdapter.getSelectedAlbums();
+        ArrayList<Integer> selectedPositions = albumAdapter.getSelectedPositions();
+
+        selectedPositions.clear();
+        selectedAlbums.clear();
+
+        if (context instanceof AddFavoriteAlbumActivity) {
+            for (int i = 0; i < CurrentAlbumArrayList.size(); i++) {
+                Album album = CurrentAlbumArrayList.get(i);
+                if (album.getIsFavored() == 0) {
+                    selectedPositions.add(i);
+                    selectedAlbums.add(album);
+                }
+            }
+        } else {
+            selectedAlbums.addAll(CurrentAlbumArrayList);
+            for (int i = 0; i < CurrentAlbumArrayList.size(); i++) {
+                selectedPositions.add(i);
+            }
+        }
+
+        albumAdapter.notifyDataSetChanged();
+    }
+
     public void initActivityResultLauncher() {
         // when click button back in toolbar or in smartphone to finish AlbumInfoActivity
         startIntentAlbumInfo = registerForActivityResult(
@@ -606,8 +636,8 @@ public class AlbumFragment extends Fragment {
                         Intent data = result.getData();
                         if (data != null) {
                             int isDelete = data.getIntExtra("isDelete", 0);
-                            Album album = (Album) data.getSerializableExtra("album");
-                            ArrayList<Image> imageArrayListAfterChange = (ArrayList<Image>) data.getSerializableExtra("images");
+                            Album album = data.getParcelableExtra("album");
+                            ArrayList<Image> imageArrayListAfterChange = data.getParcelableArrayListExtra("images");
 
                             // change images in album if user choose button add image or delete image in album
                             if (imageArrayListAfterChange != null) {
@@ -646,14 +676,19 @@ public class AlbumFragment extends Fragment {
         );
 
         // after choosing an album to add to favorites and finish AddFavoriteAlbumActivity
-        startIntentAddAlbumToFavorites = registerForActivityResult(
+        startIntentAddAlbumsToFavorites = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null) {
-                            Album addedAlbum = (Album) data.getSerializableExtra("AlbumAddedToFavorites");
-                            ArrayList<Album> addedAlbums = (ArrayList<Album>) data.getSerializableExtra("AlbumsAddedToFavorites");
+                            Album addedAlbum = data.getParcelableExtra("AlbumAddedToFavorites");
+                            ArrayList<Album> addedAlbums = data.getParcelableArrayListExtra("AlbumsAddedToFavorites");
+
+                            if (addedAlbums == null) {
+                                Log.d("aaaa", "null");
+                            }
+
                             if (addedAlbum != null) {
                                 CurrentAlbumArrayList.add(0, addedAlbum);
                                 albumAdapter.notifyDataSetChanged();

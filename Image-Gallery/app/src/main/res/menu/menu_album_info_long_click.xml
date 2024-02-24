@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/removeFromAlbum"
-        android:title="@string/RemoveImagesFromAlbumInMenu"
-        android:icon="@android:drawable/bottom_bar" />
+        android:title="@string/RemoveImagesFromAlbumInMenu"/>
     <item android:id="@+id/deleteImagesFromAlbum"
-        android:title="@string/DeleteImagesInMenu"
-        android:icon="@android:drawable/bottom_bar" />
+        android:title="@string/DeleteImagesInMenu" />
     <item android:id="@+id/slideshow"
-        android:title="@string/SlideshowImagesInMenu"
-        android:icon="@android:drawable/bottom_bar" />
+        android:title="@string/SlideshowImagesInMenu" />
+    <item android:id="@+id/backupImagesInAlbum"
+        android:title="@string/BackupInMenu"/>
+    <item android:id="@+id/selectAllImages"
+        android:title="@string/SelectAllTitle" />
 </menu>

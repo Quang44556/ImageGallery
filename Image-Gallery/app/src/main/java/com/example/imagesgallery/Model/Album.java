@@ -1,9 +1,13 @@
 package com.example.imagesgallery.Model;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
-public class Album implements Serializable {
+public class Album implements Parcelable {
     private Image cover;
     private String name;
     private String description;
@@ -19,6 +23,27 @@ public class Album implements Serializable {
         this.id = id;
         listImage = new ArrayList<>();
     }
+
+    protected Album(Parcel in) {
+        cover = in.readParcelable(Image.class.getClassLoader());
+        name = in.readString();
+        description = in.readString();
+        isFavored = in.readInt();
+        id = in.readInt();
+        listImage = in.createTypedArrayList(Image.CREATOR);
+    }
+
+    public static final Creator<Album> CREATOR = new Creator<Album>() {
+        @Override
+        public Album createFromParcel(Parcel in) {
+            return new Album(in);
+        }
+
+        @Override
+        public Album[] newArray(int size) {
+            return new Album[size];
+        }
+    };
 
     public ArrayList<Image> getListImage() {
         return listImage;
@@ -66,5 +91,20 @@ public class Album implements Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeParcelable(cover, i);
+        parcel.writeString(name);
+        parcel.writeString(description);
+        parcel.writeInt(isFavored);
+        parcel.writeInt(id);
+        parcel.writeTypedList(listImage);
     }
 }

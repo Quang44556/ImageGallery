@@ -11,3 +11,4 @@
         android:contentDescription="@string/contentDescription_image_full_screen" />
 
 </LinearLayout>
+

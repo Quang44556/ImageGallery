@@ -3,10 +3,12 @@ package com.example.imagesgallery.Activity;
 import static com.example.imagesgallery.Database.SqliteDatabase.delete;
 import static com.example.imagesgallery.Database.SqliteDatabase.removeImageFromAlbum;
 import static com.example.imagesgallery.Database.SqliteDatabase.update;
+import static com.example.imagesgallery.Utils.FileHelper.copyFileToExternalStorage;
 import static com.example.imagesgallery.Utils.PathUtils.getUriFromPath;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.RecoverableSecurityException;
 import android.app.WallpaperManager;
@@ -30,15 +32,27 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.FileProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.imagesgallery.Adapter.ImageViewPager2Adapter;
 import com.example.imagesgallery.Model.Image;
+import com.example.imagesgallery.MyChannel;
 import com.example.imagesgallery.R;
+import com.example.imagesgallery.DepthPageTransformer;
+import com.example.imagesgallery.Service.ServiceNotification;
+import com.example.imagesgallery.Utils.Constants;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -49,6 +63,10 @@ public class ImageInfoActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> startIntentSeeDescription;
     private ActivityResultLauncher<IntentSenderRequest> startIntentDeleteImage;
     ViewPager2 viewPager2;
+    FirebaseAuth mAuth;
+    FirebaseUser user;
+    int action;
+    final int NOTIFICATION_ID = 123;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -58,16 +76,23 @@ public class ImageInfoActivity extends AppCompatActivity {
 
         initActivityResultLauncher();
 
+        // init firebase
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+
         // Get the path to the image from the intent
         currentIndex = getIntent().getIntExtra("index", 0);
-        imageArrayList = (ArrayList<Image>) getIntent().getSerializableExtra("imageArraylist");
+        imageArrayList = getIntent().getParcelableArrayListExtra("imageArraylist");
         if (imageArrayList != null) {
             image = imageArrayList.get(currentIndex);
         }
 
+        // get action
+        action = getIntent().getIntExtra("action", 0);
+
         // init viewpager2
         viewPager2 = findViewById(R.id.viewpager);
-        ImageViewPager2Adapter adapter = new ImageViewPager2Adapter(imageArrayList, getApplicationContext());
+        ImageViewPager2Adapter adapter = new ImageViewPager2Adapter(imageArrayList, getApplicationContext(), viewPager2);
         viewPager2.setAdapter(adapter);
         viewPager2.setCurrentItem(currentIndex, false);
 
@@ -79,6 +104,8 @@ public class ImageInfoActivity extends AppCompatActivity {
                 invalidateOptionsMenu();
             }
         });
+
+        viewPager2.setPageTransformer(new DepthPageTransformer());
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -144,6 +171,7 @@ public class ImageInfoActivity extends AppCompatActivity {
             menu.findItem(R.id.RemoveImage).setVisible(false);
         }
 
+        // adjust menu base on isFavored
         int isFavored = image.getIsFavored();
         if (isFavored == 1) {
             menu.findItem(R.id.removeImageFromFavorites).setVisible(true);
@@ -151,6 +179,21 @@ public class ImageInfoActivity extends AppCompatActivity {
         } else if (isFavored == 0) {
             menu.findItem(R.id.removeImageFromFavorites).setVisible(false);
             menu.findItem(R.id.addImageToFavorites).setVisible(true);
+        }
+
+        // adjust menu base on user go to this activity from BackupImagesActivity or not
+        if (action == Constants.ACTION_SEE_BACKUP_IMAGES) {
+            menu.findItem(R.id.deleteImage).setVisible(false);
+            menu.findItem(R.id.RemoveImage).setVisible(false);
+            menu.findItem(R.id.setAsWallpaper).setVisible(false);
+            menu.findItem(R.id.shareImage).setVisible(false);
+            menu.findItem(R.id.addImageToFavorites).setVisible(false);
+            menu.findItem(R.id.removeImageFromFavorites).setVisible(false);
+            menu.findItem(R.id.seeDescription).setVisible(false);
+            menu.findItem(R.id.backupImage).setVisible(false);
+        } else {
+            menu.findItem(R.id.downloadBackupImage).setVisible(false);
+            menu.findItem(R.id.deleteBackupImage).setVisible(false);
         }
 
         return super.onCreateOptionsMenu(menu);
@@ -175,9 +218,91 @@ public class ImageInfoActivity extends AppCompatActivity {
             invalidateOptionsMenu();
         } else if (itemID == R.id.seeDescription) {
             seeDescriptionImage();
+        } else if (itemID == R.id.backupImage) {
+            backupImage(image.getPath());
+        } else if (itemID == R.id.downloadBackupImage) {
+            try {
+                downloadImage();
+            } catch (IOException e) {
+                Log.e("aaaaa", Objects.requireNonNull(e.getMessage()));
+            }
+        } else if (itemID == R.id.deleteBackupImage) {
+            deleteBackupImage();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void downloadImage() throws IOException {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(image.getPath());
+
+        File localFile = File.createTempFile("images", "jpg");
+
+        // create notification through service
+        Intent intent = new Intent(getApplicationContext(), ServiceNotification.class);
+        intent.putExtra("action", Constants.ACTION_DOWNLOADING);
+        startService(intent);
+
+        storageReference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+            // copy to external storage
+            copyFileToExternalStorage(getApplicationContext(), localFile);
+
+            // create notification through service
+            Intent intent2 = new Intent(getApplicationContext(), ServiceNotification.class);
+            intent2.putExtra("action", Constants.ACTION_DOWNLOAD_COMPLETE);
+            startService(intent2);
+
+        }).addOnFailureListener(e -> Log.e("aaaa", Objects.requireNonNull(e.getMessage())));
+    }
+
+    private void backupImage(String path) {
+        if (user == null) {
+            MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(ImageInfoActivity.this);
+            dialogBuilder.setTitle("Please sign in to use this function");
+
+            dialogBuilder.setPositiveButton("Ok", (dialog, id) -> {
+                dialog.dismiss();
+            });
+
+            dialogBuilder.show();
+            return;
+        }
+
+        Uri file = Uri.fromFile(new File(path));
+        StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(getString(R.string.folder_path_storage));
+        StorageReference riversRef = storageRef.child(user.getEmail() + "/" + file.getLastPathSegment());
+        UploadTask uploadTask = riversRef.putFile(file);
+
+        // create notification through service
+        Intent intent = new Intent(getApplicationContext(), ServiceNotification.class);
+        intent.putExtra("action", Constants.ACTION_UPLOADING);
+        startService(intent);
+
+        // Register observers to listen for when the download is done or if it fails
+        uploadTask.addOnFailureListener(exception ->
+                        Toast.makeText(ImageInfoActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(taskSnapshot -> {
+
+                    // create notification through service
+                    Intent intent2 = new Intent(getApplicationContext(), ServiceNotification.class);
+                    intent2.putExtra("action", Constants.ACTION_UPLOAD_COMPLETE);
+                    startService(intent2);
+                });
+    }
+
+    private void deleteBackupImage() {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(image.getPath());
+
+        // Delete the file
+        storageReference.delete()
+                .addOnSuccessListener(aVoid -> {
+                    imageArrayList.remove(image);
+                    returnToPreviousActivityAfterDeletingImage();
+                })
+                .addOnFailureListener(exception -> {
+                    Toast.makeText(ImageInfoActivity.this, "Cannot delete this image", Toast.LENGTH_SHORT).show();
+                    Log.e("aaaa", Objects.requireNonNull(exception.getMessage()));
+                });
     }
 
     private void seeDescriptionImage() {

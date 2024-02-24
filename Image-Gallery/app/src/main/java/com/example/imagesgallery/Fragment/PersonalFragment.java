@@ -6,25 +6,35 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.example.imagesgallery.Activity.BackupImagesActivity;
 import com.example.imagesgallery.Activity.FavoriteAlbumsActivity;
 import com.example.imagesgallery.Activity.FavoriteImagesActivity;
+import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.R;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class PersonalFragment extends Fragment {
-    Button btnFavoriteAlbums, btnFavoriteImages;
+    CardView cardViewFavorite, cardViewBackup;
     Context context;
+    ImageView imgImage;
+    ImageView imgAlbum;
+    MainActivity mainActivity;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         context = getContext();
+        if (context instanceof MainActivity) {
+            mainActivity = (MainActivity) getActivity();
+        }
     }
 
     @Override
@@ -36,16 +46,44 @@ public class PersonalFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        btnFavoriteAlbums = view.findViewById(R.id.buttonFavoriteAlbums);
-        btnFavoriteImages = view.findViewById(R.id.buttonFavoriteImages);
+        cardViewFavorite = view.findViewById(R.id.CardViewFavorite);
+        cardViewBackup = view.findViewById(R.id.CardViewBackup);
 
-        btnFavoriteAlbums.setOnClickListener(view1 -> {
-            Intent intent = new Intent(context, FavoriteAlbumsActivity.class);
+        mainActivity.hideLinearLayoutTitle();
+
+        cardViewFavorite.setOnClickListener(view1 -> openBottomSheet());
+
+        cardViewBackup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openBackupImagesActivity();
+            }
+        });
+    }
+
+    private void openBackupImagesActivity() {
+        Intent intent = new Intent(context, BackupImagesActivity.class);
+        startActivity(intent);
+    }
+
+    private void openBottomSheet() {
+        // open bottom sheet
+        View viewDialog = getLayoutInflater().inflate(R.layout.bottom_sheet_choosing, null);
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
+        bottomSheetDialog.setContentView(viewDialog);
+        bottomSheetDialog.show();
+
+        // implement listener of views in bottom sheet
+        imgImage = viewDialog.findViewById(R.id.imageViewFavoriteImage);
+        imgAlbum = viewDialog.findViewById(R.id.imageViewFavoriteAlbum);
+
+        imgImage.setOnClickListener(view -> {
+            Intent intent = new Intent(context, FavoriteImagesActivity.class);
             startActivity(intent);
         });
 
-        btnFavoriteImages.setOnClickListener(view2 -> {
-            Intent intent = new Intent(context, FavoriteImagesActivity.class);
+        imgAlbum.setOnClickListener(view -> {
+            Intent intent = new Intent(context, FavoriteAlbumsActivity.class);
             startActivity(intent);
         });
     }

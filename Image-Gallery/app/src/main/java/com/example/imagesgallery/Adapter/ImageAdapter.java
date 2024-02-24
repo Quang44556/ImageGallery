@@ -1,7 +1,6 @@
 package com.example.imagesgallery.Adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.imagesgallery.Activity.ChooseImagesActivity;
-import com.example.imagesgallery.Constants;
 import com.example.imagesgallery.Interface.ClickListener;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
+import com.example.imagesgallery.Utils.Constants;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
@@ -94,25 +92,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        File image_file = new File(imageArrayList.get(holder.getAdapterPosition()).getPath());
-        if (image_file.exists()) {
-            Glide.with(context)
-                    .load(image_file)
-                    .placeholder(R.drawable.loading)
-                    .error(R.drawable.no_image)
-                    .into(holder.image);
-        } else {
-            // user deleted image in another app
-            Glide.with(context)
-                    .load(R.drawable.no_image)
-                    .into(holder.image);
-        }
+        Image image = imageArrayList.get(holder.getAdapterPosition());
+        Glide.with(context)
+                .load(image.getPath())
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.no_image)
+                .into(holder.image);
 
-        // Check if the item is selected and update its appearance
-        boolean isSelected = selectedImages.contains(imageArrayList.get(holder.getAdapterPosition()));
-        holder.itemView.setSelected(isSelected);
-
-        if (selectedImages.contains(imageArrayList.get(holder.getAdapterPosition()))) {
+        if (selectedImages.contains(image)) {
             holder.checkBox.setVisibility(View.VISIBLE);
             holder.checkBox.setChecked(true);
         } else {
@@ -123,11 +110,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         // use these codes to avoid item in DefaultArray have same UI of item in SearchArray due to viewHolder
         holder.image.setEnabled(true);
         holder.image.setAlpha(1f);
+        holder.itemView.setEnabled(true);
 
-        if (!imageArrayList.get(holder.getAdapterPosition()).isCanAddToCurrentAlbum() ||
+        if (!image.isCanAddToCurrentAlbum() ||
                 (action == Constants.ACTION_CHOOSE_FAVORITE_IMAGES &&
                         context instanceof ChooseImagesActivity &&
-                        imageArrayList.get(holder.getAdapterPosition()).getIsFavored() == 1)) {
+                        image.getIsFavored() == 1)) {
             // disable image and change its appearance if it is in current album
             holder.image.setEnabled(false);
             holder.image.setAlpha(0.5f);

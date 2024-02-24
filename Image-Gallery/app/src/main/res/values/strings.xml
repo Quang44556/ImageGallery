@@ -47,4 +47,18 @@
     <string name="ImageTitleNav">Image</string>
     <string name="AlbumTitleNav">Album</string>
     <string name="PersonalTitleNav">Personal</string>
+    <string name="SelectAllTitle">Select all</string>
+    <string name="app_name_display">Image Gallery</string>
+    <string name="SignInTitle">Sign In</string>
+    <string name="default_web_client_id">878322958096-0c8cpcm82pg5eva9dgoodv63ilio4h0a.apps.googleusercontent.com</string>
+    <string name="SignOutTitle">Sign out</string>
+    <string name="EnableBackupTitle">Enable backup</string>
+    <string name="DisableBackupTitle">Disable backup</string>
+    <string name="enable_backup_key">enable_backup_key</string>
+    <string name="folder_path_storage">gs://image-gallery-ef079.appspot.com</string>
+    <string name="BackupInMenu">Backup</string>
+    <string name="NamePreferences">my_prefs</string>
+    <string name="TitleBackup">Backup</string>
+    <string name="DownloadInMenu">Download</string>
+    <string name="DeleteBackupTitle">Delete</string>
 </resources>
