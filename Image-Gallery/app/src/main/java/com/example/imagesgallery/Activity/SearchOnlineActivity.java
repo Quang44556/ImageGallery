@@ -51,7 +51,7 @@ public class SearchOnlineActivity extends AppCompatActivity {
     boolean isLoading = false, isOutOfItems = false;
     final String searchEngine = "google_images";
     final String api_key = "cebc987e4389dbbb2d5af1d030d1535ebbfeb2c7f1c8a65c4673796ec1fb7899";
-    int ijn = 0, currentTotalItems = 0;
+    int ijn = 0;
     String mQuery;
 
     ClickListener listener = new ClickListener() {
@@ -163,7 +163,6 @@ public class SearchOnlineActivity extends AppCompatActivity {
                     mQuery = query;
                     lottieAnimationView.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
-                    currentTotalItems = 0;
                     imagesResultList.clear();
                     ijn = 0;
                     isOutOfItems = false;
@@ -203,8 +202,7 @@ public class SearchOnlineActivity extends AppCompatActivity {
                             // add new images to array
                             List<ImagesResult> newResultList = searchResponse.getResultList();
                             imagesResultList.addAll(newResultList);
-                            adapter.notifyItemRangeInserted(currentTotalItems, newResultList.size());
-                            currentTotalItems += newResultList.size();
+                            adapter.notifyDataSetChanged();
                         } else {
                             isOutOfItems = true;
                         }
