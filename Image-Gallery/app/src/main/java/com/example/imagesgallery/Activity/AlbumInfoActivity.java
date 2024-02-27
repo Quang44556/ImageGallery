@@ -26,7 +26,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -200,9 +199,7 @@ public class AlbumInfoActivity extends AppCompatActivity {
         } else if (itemID == R.id.removeFromAlbum) {
             createDialogRemoveImages();
         } else if (itemID == R.id.backupImagesInAlbum){
-            //imageFragment.backupImages();
-            Toast.makeText(this, "backup", Toast.LENGTH_SHORT).show();
-            Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
+            imageFragment.backupImages();
             imageFragment.exitMultiselectMode();
         }
         return super.onOptionsItemSelected(item);

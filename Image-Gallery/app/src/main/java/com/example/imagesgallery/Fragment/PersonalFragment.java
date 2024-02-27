@@ -17,11 +17,12 @@ import com.example.imagesgallery.Activity.BackupImagesActivity;
 import com.example.imagesgallery.Activity.FavoriteAlbumsActivity;
 import com.example.imagesgallery.Activity.FavoriteImagesActivity;
 import com.example.imagesgallery.Activity.MainActivity;
+import com.example.imagesgallery.Activity.SearchOnlineActivity;
 import com.example.imagesgallery.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class PersonalFragment extends Fragment {
-    CardView cardViewFavorite, cardViewBackup;
+    CardView cardViewFavorite, cardViewBackup, cardViewSearch;
     Context context;
     ImageView imgImage;
     ImageView imgAlbum;
@@ -48,21 +49,24 @@ public class PersonalFragment extends Fragment {
 
         cardViewFavorite = view.findViewById(R.id.CardViewFavorite);
         cardViewBackup = view.findViewById(R.id.CardViewBackup);
+        cardViewSearch = view.findViewById(R.id.CardViewSearch);
 
         mainActivity.hideLinearLayoutTitle();
 
         cardViewFavorite.setOnClickListener(view1 -> openBottomSheet());
 
-        cardViewBackup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openBackupImagesActivity();
-            }
-        });
+        cardViewBackup.setOnClickListener(view12 -> openBackupImagesActivity());
+
+        cardViewSearch.setOnClickListener(view13 -> openSearchOnlineActivity());
     }
 
     private void openBackupImagesActivity() {
         Intent intent = new Intent(context, BackupImagesActivity.class);
+        startActivity(intent);
+    }
+
+    private void openSearchOnlineActivity() {
+        Intent intent = new Intent(context, SearchOnlineActivity.class);
         startActivity(intent);
     }
 

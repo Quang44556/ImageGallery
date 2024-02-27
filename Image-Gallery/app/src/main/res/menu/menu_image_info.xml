@@ -7,9 +7,6 @@
         android:id="@+id/RemoveImage"
         android:title="@string/RemoveImageFromAlbumInMenu" />
     <item
-        android:id="@+id/setAsWallpaper"
-        android:title="@string/SetAsWallpaperInMenu" />
-    <item
         android:id="@+id/shareImage"
         android:title="@string/ShareImageInMenu" />
     <item

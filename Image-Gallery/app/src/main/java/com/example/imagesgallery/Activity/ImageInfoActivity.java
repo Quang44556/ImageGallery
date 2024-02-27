@@ -8,10 +8,8 @@ import static com.example.imagesgallery.Utils.PathUtils.getUriFromPath;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.RecoverableSecurityException;
-import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
@@ -32,15 +30,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.FileProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.imagesgallery.Adapter.ImageViewPager2Adapter;
-import com.example.imagesgallery.Model.Image;
-import com.example.imagesgallery.MyChannel;
-import com.example.imagesgallery.R;
 import com.example.imagesgallery.DepthPageTransformer;
+import com.example.imagesgallery.Model.Image;
+import com.example.imagesgallery.R;
 import com.example.imagesgallery.Service.ServiceNotification;
 import com.example.imagesgallery.Utils.Constants;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -66,7 +62,6 @@ public class ImageInfoActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     FirebaseUser user;
     int action;
-    final int NOTIFICATION_ID = 123;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -185,7 +180,6 @@ public class ImageInfoActivity extends AppCompatActivity {
         if (action == Constants.ACTION_SEE_BACKUP_IMAGES) {
             menu.findItem(R.id.deleteImage).setVisible(false);
             menu.findItem(R.id.RemoveImage).setVisible(false);
-            menu.findItem(R.id.setAsWallpaper).setVisible(false);
             menu.findItem(R.id.shareImage).setVisible(false);
             menu.findItem(R.id.addImageToFavorites).setVisible(false);
             menu.findItem(R.id.removeImageFromFavorites).setVisible(false);
@@ -206,8 +200,6 @@ public class ImageInfoActivity extends AppCompatActivity {
             deleteImage(getUriFromPath(ImageInfoActivity.this, new File(image.getPath())));
         } else if (itemID == R.id.RemoveImage) {
             RemoveImageFromAlbum();
-        } else if (itemID == R.id.setAsWallpaper) {
-            setAsWallpaper();
         } else if (itemID == R.id.shareImage) {
             shareImage();
         } else if (itemID == R.id.addImageToFavorites) {
@@ -260,9 +252,7 @@ public class ImageInfoActivity extends AppCompatActivity {
             MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(ImageInfoActivity.this);
             dialogBuilder.setTitle("Please sign in to use this function");
 
-            dialogBuilder.setPositiveButton("Ok", (dialog, id) -> {
-                dialog.dismiss();
-            });
+            dialogBuilder.setPositiveButton("Ok", (dialog, id) -> dialog.dismiss());
 
             dialogBuilder.show();
             return;
@@ -351,19 +341,6 @@ public class ImageInfoActivity extends AppCompatActivity {
 
         }
         return uri;
-    }
-
-    private void setAsWallpaper() {
-        try {
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-            // Load the image from the file
-            Uri imageUri = Uri.fromFile(new File(image.getPath()));
-            wallpaperManager.setStream(getContentResolver().openInputStream(imageUri));
-            Toast.makeText(this, "Wallpaper set successfully", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Log.e("error", Objects.requireNonNull(e.getMessage()));
-            Toast.makeText(this, "Unable to set wallpaper", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void deleteImage(Uri uri) {

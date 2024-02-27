@@ -51,7 +51,7 @@
         android:layout_height="0dp"
         android:layout_margin="10dp"
         app:cardBackgroundColor="#2B88C5"
-        app:layout_constraintEnd_toStartOf="@+id/CardView3"
+        app:layout_constraintEnd_toStartOf="@+id/CardViewSearch"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/CardViewFavorite"
         app:layout_constraintTop_toTopOf="parent"
@@ -85,7 +85,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/CardView3"
+        android:id="@+id/CardViewSearch"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="10dp"
@@ -105,7 +105,7 @@
                         android:layout_height="match_parent">
 
                         <ImageView
-                            android:id="@+id/imageCoverAlbum3"
+                            android:id="@+id/search_icon"
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             android:scaleType="fitXY"

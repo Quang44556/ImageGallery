@@ -45,6 +45,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation ("com.github.chrisbanes:PhotoView:2.3.0")
     implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation ("com.airbnb.android:lottie:3.4.0")
 
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
@@ -59,4 +60,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     // Add the dependency for the Cloud Storage library
     implementation("com.google.firebase:firebase-storage:20.3.0")
+
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

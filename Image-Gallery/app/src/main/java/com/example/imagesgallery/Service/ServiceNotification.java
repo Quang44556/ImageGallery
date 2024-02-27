@@ -1,11 +1,9 @@
 package com.example.imagesgallery.Service;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -26,12 +24,15 @@ public class ServiceNotification extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int action = intent.getIntExtra("action", 0);
-        sendNotification(action);
+        int progress = intent.getIntExtra("progress", -1);
+        int max = intent.getIntExtra("max", -1);
+        sendNotification(action, progress, max);
         return START_NOT_STICKY;
     }
 
-    private void sendNotification(int action) {
+    private void sendNotification(int action, int progress, int max) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MyChannel.MyChannelID);
+
         if (action == Constants.ACTION_UPLOADING) {
             builder.setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentText("Uploading...")
@@ -56,6 +57,10 @@ public class ServiceNotification extends Service {
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setProgress(0, 0, false)
                     .setOngoing(false);
+        }
+
+        if (progress != -1 && max != -1) {
+            builder.setProgress(max, progress, false);
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {

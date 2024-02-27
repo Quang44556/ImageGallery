@@ -45,7 +45,7 @@ import com.example.imagesgallery.Activity.FavoriteAlbumsActivity;
 import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.Adapter.AlbumAdapter;
 import com.example.imagesgallery.Database.SqliteDatabase;
-import com.example.imagesgallery.Interface.ClickListener;
+import com.example.imagesgallery.Listener.ClickListener;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;

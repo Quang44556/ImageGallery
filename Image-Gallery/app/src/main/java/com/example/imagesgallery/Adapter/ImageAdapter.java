@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.imagesgallery.Activity.ChooseImagesActivity;
-import com.example.imagesgallery.Interface.ClickListener;
+import com.example.imagesgallery.Listener.ClickListener;
 import com.example.imagesgallery.Model.Image;
 import com.example.imagesgallery.R;
 import com.example.imagesgallery.Utils.Constants;
@@ -140,7 +140,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         return imageArrayList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final ImageView image;
 

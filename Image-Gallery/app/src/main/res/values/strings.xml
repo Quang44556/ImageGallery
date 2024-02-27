@@ -61,4 +61,6 @@
     <string name="TitleBackup">Backup</string>
     <string name="DownloadInMenu">Download</string>
     <string name="DeleteBackupTitle">Delete</string>
+    <string name="SearchOnlineHint">Search online</string>
+    <string name="MoreTitle">More</string>
 </resources>

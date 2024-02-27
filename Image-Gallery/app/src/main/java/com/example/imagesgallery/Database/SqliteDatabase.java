@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
-import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
 

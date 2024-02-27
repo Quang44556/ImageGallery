@@ -1,8 +1,8 @@
 package com.example.imagesgallery.Activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.imagesgallery.Fragment.ImageFragment;
 import com.example.imagesgallery.R;
@@ -18,14 +18,13 @@ public class BackupImagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_backup_images);
 
+        // check if user connected to internet or not
         if (!NetworkUtils.isNetworkAvailable(getApplication())) {
             // ask users to connect to internet if they haven't connected
             MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(BackupImagesActivity.this);
             dialogBuilder.setTitle("Please connect to internet");
 
-            dialogBuilder.setPositiveButton("Ok", (dialog, id) -> {
-                dialog.dismiss();
-            });
+            dialogBuilder.setPositiveButton("Ok", (dialog, id) -> dialog.dismiss());
 
             dialogBuilder.show();
         }

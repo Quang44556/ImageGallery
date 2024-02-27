@@ -10,20 +10,6 @@ import android.provider.MediaStore;
 import java.io.File;
 
 public class PathUtils {
-    public static String getAbsolutePathFromUri(ContentResolver contentResolver, Uri uri) {
-        String[] projection = {MediaStore.Images.Media.DATA};
-        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            String path = cursor.getString(columnIndex);
-            cursor.close();
-            return path;
-        }
-
-        return null;
-    }
-
     public static Uri getUriFromPath(Context context, File file) {
         String filePath = file.getAbsolutePath();
         Cursor cursor = context.getContentResolver().query(

@@ -1,10 +1,9 @@
 package com.example.imagesgallery.Activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 
-import com.example.imagesgallery.Fragment.AlbumFragment;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.imagesgallery.Fragment.ImageFragment;
 import com.example.imagesgallery.R;
 

@@ -57,13 +57,12 @@ import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.Activity.SlideshowActivity;
 import com.example.imagesgallery.Adapter.ImageAdapter;
 import com.example.imagesgallery.Database.SqliteDatabase;
-import com.example.imagesgallery.Interface.ClickListener;
+import com.example.imagesgallery.Listener.ClickListener;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.Model.Image;
-import com.example.imagesgallery.Service.ServiceNotification;
 import com.example.imagesgallery.R;
+import com.example.imagesgallery.Service.ServiceNotification;
 import com.example.imagesgallery.Utils.Constants;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -857,6 +856,8 @@ public class ImageFragment extends Fragment {
         // create notification through service
         Intent intent = new Intent(context, ServiceNotification.class);
         intent.putExtra("action", Constants.ACTION_DOWNLOADING);
+        intent.putExtra("progress", 0);
+        intent.putExtra("max", selectedImages.size());
         context.startService(intent);
 
         AtomicInteger progress = new AtomicInteger(0);
@@ -873,9 +874,16 @@ public class ImageFragment extends Fragment {
                 // change content of notification if all images were downloaded
                 int currentProgress = progress.incrementAndGet();
                 if (currentProgress >= total.get()) {
-                    // create notification through service
+                    // download complete
                     Intent intent2 = new Intent(context, ServiceNotification.class);
                     intent2.putExtra("action", Constants.ACTION_DOWNLOAD_COMPLETE);
+                    context.startService(intent2);
+                } else {
+                    // update progress bar
+                    Intent intent2 = new Intent(context, ServiceNotification.class);
+                    intent2.putExtra("action", Constants.ACTION_DOWNLOADING);
+                    intent2.putExtra("progress", currentProgress);
+                    intent2.putExtra("max", total.get());
                     context.startService(intent2);
                 }
             }).addOnFailureListener(e -> Log.e("aaaa", Objects.requireNonNull(e.getMessage())));
@@ -906,7 +914,8 @@ public class ImageFragment extends Fragment {
     }
 
     public void backupImages() {
-        FirebaseUser user = mainActivity.mAuth.getCurrentUser();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
 
         // ask user to sign in if they haven't
         if (user == null) {
@@ -926,6 +935,8 @@ public class ImageFragment extends Fragment {
         // create notification through service
         Intent intent = new Intent(context, ServiceNotification.class);
         intent.putExtra("action", Constants.ACTION_UPLOADING);
+        intent.putExtra("progress", 0);
+        intent.putExtra("max", selectedImages.size());
         context.startService(intent);
 
         // count the number of images that complete uploading
@@ -941,9 +952,16 @@ public class ImageFragment extends Fragment {
             uploadTask.addOnSuccessListener(taskSnapshot -> {
                 int currentProgress = progress.incrementAndGet();
                 if (currentProgress >= total.get()) {
-                    // create notification through service
+                    // upload complete
                     Intent intent2 = new Intent(context, ServiceNotification.class);
                     intent2.putExtra("action", Constants.ACTION_UPLOAD_COMPLETE);
+                    context.startService(intent2);
+                } else {
+                    // update progress bar
+                    Intent intent2 = new Intent(context, ServiceNotification.class);
+                    intent2.putExtra("action", Constants.ACTION_UPLOADING);
+                    intent2.putExtra("progress", currentProgress);
+                    intent2.putExtra("max", total.get());
                     context.startService(intent2);
                 }
             });

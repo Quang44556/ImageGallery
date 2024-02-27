@@ -12,7 +12,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.imagesgallery.Activity.AddFavoriteAlbumActivity;
 import com.example.imagesgallery.Activity.MainActivity;
-import com.example.imagesgallery.Interface.ClickListener;
+import com.example.imagesgallery.Listener.ClickListener;
 import com.example.imagesgallery.Model.Album;
 import com.example.imagesgallery.R;
 
@@ -99,7 +99,7 @@ public class AlbumAdapter extends BaseAdapter {
         notifyDataSetChanged(); // Update the UI to clear selection
     }
 
-    private class ViewHolder {
+    private static class ViewHolder {
         TextView AlbumName;
         ImageView AlbumCover;
         CheckBox checkBox;

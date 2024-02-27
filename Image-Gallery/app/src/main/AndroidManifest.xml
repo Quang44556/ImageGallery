@@ -3,13 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="CoarseFineLocation">
 
-    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <queries>
+        <package android:name="com.android.chrome" />
+    </queries>
 
     <application
         android:name=".MyChannel"
@@ -23,6 +26,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ImagesGallery"
         tools:targetApi="31">
+        <activity
+            android:name=".Activity.SearchOnlineActivity"
+            android:exported="false" />
         <activity
             android:name=".Activity.BackupImagesActivity"
             android:exported="false" />
@@ -70,8 +76,9 @@
                 android:resource="@xml/paths" />
         </provider>
 
-        <service android:name=".Service.ServiceNotification"
-            android:foregroundServiceType="shortService"/>
+        <service
+            android:name=".Service.ServiceNotification"
+            android:foregroundServiceType="shortService" />
     </application>
 
 </manifest>
