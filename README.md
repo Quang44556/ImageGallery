@@ -11,3 +11,4 @@ This is an android application that allows users to manage images in their devic
 - Backup images by signing in Google account
 - Search for images on the internet and navigate users to website containing those images
 
+__Thank you for reading!__
