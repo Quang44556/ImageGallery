@@ -5,10 +5,10 @@ This is an android application that allows users to manage images in their devic
 
 ## Main features
 - Manage images in device
-- Create, delete, search albums
-- Share image through Facebook, Gmail, Drive,...
-- Add images and albums to favorite 
-- Backup images by signing in Google account
-- Search for images on the internet and navigate users to website containing those images
+- Create, delete, search for albums
+- Share images through Facebook, Gmail, Drive,..
+- Add images and albums to favorites
+- Backup images by signing in to a Google account
+- Search for images on the internet and navigate users to websites containing those images
 
 __Thanks for reading!__
