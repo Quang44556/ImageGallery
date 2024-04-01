@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +21,8 @@ import com.example.imagesgallery.Activity.MainActivity;
 import com.example.imagesgallery.Activity.SearchOnlineActivity;
 import com.example.imagesgallery.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class PersonalFragment extends Fragment {
     CardView cardViewFavorite, cardViewBackup, cardViewSearch;
@@ -27,6 +30,7 @@ public class PersonalFragment extends Fragment {
     ImageView imgImage;
     ImageView imgAlbum;
     MainActivity mainActivity;
+    FirebaseAuth mAuth;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,6 +51,9 @@ public class PersonalFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+
         cardViewFavorite = view.findViewById(R.id.CardViewFavorite);
         cardViewBackup = view.findViewById(R.id.CardViewBackup);
         cardViewSearch = view.findViewById(R.id.CardViewSearch);
@@ -55,7 +62,13 @@ public class PersonalFragment extends Fragment {
 
         cardViewFavorite.setOnClickListener(view1 -> openBottomSheet());
 
-        cardViewBackup.setOnClickListener(view12 -> openBackupImagesActivity());
+        cardViewBackup.setOnClickListener(view12 -> {
+            if (user == null) {
+                Toast.makeText(context, "You must sign in to use this function", Toast.LENGTH_SHORT).show();
+            } else {
+                openBackupImagesActivity();
+            }
+        });
 
         cardViewSearch.setOnClickListener(view13 -> openSearchOnlineActivity());
     }
